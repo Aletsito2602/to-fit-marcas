@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "159172611530",
+    "firebase_url": "https://to-fit-default-rtdb.firebaseio.com",
+    "project_id": "to-fit",
+    "storage_bucket": "to-fit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:159172611530:android:b21954e2a556ff22815333",
+        "android_client_info": {
+          "package_name": "com.tofit.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO4AAi8sg5tSOc89ofznMaytDOUODHib4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:159172611530:android:806e610bd7652454815333",
+        "android_client_info": {
+          "package_name": "com.tofit.marcas.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO4AAi8sg5tSOc89ofznMaytDOUODHib4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
