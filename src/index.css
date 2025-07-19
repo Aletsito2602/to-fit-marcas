@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+    scroll-behavior: smooth !important;
+  }
+  
+  body {
+    @apply min-h-screen antialiased font-sans;
+    background-color: #0a0a0a;
+    color: #ffffff;
+    scroll-behavior: smooth !important;
+  }
+  
+  * {
+    scroll-behavior: smooth !important;
+  }
+  
+  /* Scrollbar personalizado con smooth */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: #1a1a1a;
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #333333;
+    @apply rounded-full;
+    transition: background-color 0.2s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #555555;
+  }
+  
+  /* Scroll suave universal */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #444444;
+  }
+}
+
+@layer components {
+  /* Clases de utilidad personalizadas para ToFit */
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .page-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .card-base {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    @apply rounded-lg shadow-lg;
+  }
+  
+  .button-primary {
+    background-color: #3b82f6;
+    @apply hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    --tw-ring-offset-color: #0a0a0a;
+  }
+  
+  .button-secondary {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #333333;
+    @apply hover:bg-gray-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+    --tw-ring-offset-color: #0a0a0a;
+  }
+  
+  .input-base {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    color: #ffffff;
+    @apply rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200;
+  }
+  
+  .input-base::placeholder {
+    color: #6b7280;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent;
+  }
+
+  /* Sidebar Navigation */
+  .sidebar-link {
+    @apply flex items-center px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-background-tertiary rounded-lg transition-all duration-200;
+  }
+  
+  .sidebar-link.active {
+    @apply bg-accent-primary text-white;
+  }
+  
+  .sidebar-link.active .lucide {
+    @apply text-white;
+  }
+}
+
+@layer utilities {
+  /* Utility para ocultar scrollbars */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+  
+  /* Smooth touch scrolling */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Optimizaciones para móvil */
+  .mobile-optimized {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Backdrop blur mejorado */
+  .backdrop-blur-enhanced {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+/* Smooth momentum scrolling for touch devices */
+.scrollbar-hide {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom button disabled state */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Embla carousel container */
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
