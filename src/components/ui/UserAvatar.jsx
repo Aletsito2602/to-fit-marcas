@@ -30,17 +30,17 @@ const UserAvatar = ({
   const getAvatarSrc = () => {
     if (imageError) {
       // Si hubo error, usar avatar generado por iniciales
-      const seed = fallbackSeed || user?.email || user?.name || user?.userDisplayName || 'User'
+      const seed = fallbackSeed || user?.email || user?.name || user?.userDisplayName || user?.displayName || 'User'
       return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed)}&backgroundColor=6366f1&textColor=ffffff&size=${sizePixels[size]}`
     }
 
-    // Prioridad: photoURL > avatar > imagen generada > imagen por defecto
-    if (user?.photoURL) return user.photoURL
-    if (user?.avatar) return user.avatar
-    if (user?.userAvatar) return user.userAvatar
+    // Prioridad: photoURL > avatar > userAvatar > imagen generada
+    if (user?.photoURL && !user.photoURL.includes('dicebear')) return user.photoURL
+    if (user?.avatar && !user.avatar.includes('dicebear')) return user.avatar
+    if (user?.userAvatar && !user.userAvatar.includes('dicebear')) return user.userAvatar
     
     // Avatar generado por iniciales como fallback
-    const seed = user?.email || user?.name || user?.userDisplayName || 'User'
+    const seed = user?.email || user?.name || user?.userDisplayName || user?.displayName || 'User'
     return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed)}&backgroundColor=6366f1&textColor=ffffff&size=${sizePixels[size]}`
   }
 

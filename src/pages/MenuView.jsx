@@ -2,53 +2,217 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingCart, Menu, Search } from 'lucide-react'
 import MenuItem, { MenuItemWithToggle, MenuSection } from '../components/ui/MenuItem'
-import { userData, menuStructure, menuActions, defaultUserSettings } from '../data/menuData'
+import { menuStructure, defaultUserSettings } from '../data/menuData'
+import { useAuthStore } from '../store/authStore'
+import { updateUserProfile, getUserProfile } from '../services/userProfileService'
+import UserAvatar from '../components/ui/UserAvatar'
+import toast from 'react-hot-toast'
 
 const MenuView = () => {
   const navigate = useNavigate()
+  const { user: currentUser, logout } = useAuthStore()
   const [userSettings, setUserSettings] = useState(defaultUserSettings)
-  const [user, setUser] = useState(userData)
+  const [userProfile, setUserProfile] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  // Cargar configuraciones del usuario al montar el componente
+  // ✅ CARGAR DATOS REALES DEL USUARIO DESDE FIREBASE
   useEffect(() => {
-    // Aquí se cargarían las configuraciones reales del usuario desde una API
-    const savedSettings = localStorage.getItem('userSettings')
-    if (savedSettings) {
-      setUserSettings({ ...defaultUserSettings, ...JSON.parse(savedSettings) })
-    }
-  }, [])
+    const loadUserData = async () => {
+      if (!currentUser) {
+        navigate('/login')
+        return
+      }
 
-  // Guardar configuraciones cuando cambien
-  const saveUserSettings = (newSettings) => {
+      setLoading(true)
+      try {
+        const userId = currentUser.id || currentUser.uid || currentUser.email
+        
+        // Cargar perfil del usuario
+        const profileResult = await getUserProfile(userId)
+        if (profileResult.success) {
+          setUserProfile(profileResult.data)
+          // Cargar configuraciones guardadas en Firebase
+          if (profileResult.data.settings) {
+            setUserSettings({ ...defaultUserSettings, ...profileResult.data.settings })
+          }
+        } else {
+          // Si no existe perfil, usar datos básicos del currentUser
+          setUserProfile({
+            name: currentUser.name || currentUser.displayName || 'Usuario ToFit',
+            handle: currentUser.email ? `@${currentUser.email.split('@')[0]}` : '@usuario',
+            avatar: currentUser.photoURL || currentUser.avatar,
+            email: currentUser.email
+          })
+        }
+
+        // También intentar cargar desde localStorage como backup
+        const savedSettings = localStorage.getItem(`userSettings_${userId}`)
+        if (savedSettings) {
+          const parsed = JSON.parse(savedSettings)
+          setUserSettings(prev => ({ ...prev, ...parsed }))
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error)
+        toast.error('Error al cargar datos del usuario')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadUserData()
+  }, [currentUser, navigate])
+
+  // ✅ GUARDAR CONFIGURACIONES EN FIREBASE Y LOCALSTORAGE
+  const saveUserSettings = async (newSettings) => {
+    if (!currentUser) return
+
     setUserSettings(newSettings)
-    localStorage.setItem('userSettings', JSON.stringify(newSettings))
+    const userId = currentUser.id || currentUser.uid || currentUser.email
+    
+    try {
+      // Guardar en Firebase
+      await updateUserProfile(userId, {
+        settings: newSettings
+      })
+      
+      // Backup en localStorage
+      localStorage.setItem(`userSettings_${userId}`, JSON.stringify(newSettings))
+      
+      toast.success('Configuración guardada')
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      toast.error('Error al guardar configuración')
+    }
   }
 
-  // Manejar toggle de notificaciones
-  const handleNotificationToggle = (enabled) => {
+  // ✅ MANEJAR TOGGLE DE NOTIFICACIONES CON PERSISTENCIA
+  const handleNotificationToggle = async (enabled) => {
     const newSettings = {
       ...userSettings,
       pushNotifications: enabled,
       notificationsEnabled: enabled
     }
-    saveUserSettings(newSettings)
     
-    // Mostrar feedback al usuario
-    console.log(enabled ? 'Notificaciones activadas' : 'Notificaciones desactivadas')
+    // Intentar solicitar permisos de notificación si se activan
+    if (enabled && 'Notification' in window) {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        toast.error('Permisos de notificación denegados')
+        return
+      }
+    }
+    
+    await saveUserSettings(newSettings)
+    toast.success(enabled ? 'Notificaciones activadas' : 'Notificaciones desactivadas')
   }
 
-  // Manejar navegación
+  // ✅ MANEJAR NAVEGACIÓN CON VALIDACIÓN
   const handleNavigation = (route) => {
-    if (route) {
-      navigate(route)
+    if (!route) return
+    
+    // Verificar si la ruta requiere autenticación
+    const protectedRoutes = ['/purchases', '/favorites', '/mi-cuenta', '/mi-perfil']
+    if (protectedRoutes.includes(route) && !currentUser) {
+      toast.error('Necesitas iniciar sesión')
+      navigate('/login')
+      return
+    }
+    
+    navigate(route)
+  }
+
+  // ✅ ACCIONES ESPECIALES MEJORADAS
+  const handleAction = async (actionType) => {
+    switch (actionType) {
+      case 'rate':
+        handleRateApp()
+        break
+      case 'share':
+        await handleShareApp()
+        break
+      case 'social':
+        handleSocialLinks()
+        break
+      case 'logout':
+        await handleLogout()
+        break
+      default:
+        console.log('Acción no reconocida:', actionType)
     }
   }
 
-  // Manejar acciones especiales
-  const handleAction = (actionType) => {
-    if (menuActions[actionType]) {
-      menuActions[actionType]()
+  // ✅ FUNCIÓN PARA CALIFICAR APP
+  const handleRateApp = () => {
+    const userAgent = navigator.userAgent.toLowerCase()
+    let storeUrl = 'https://tofit.app'
+    
+    if (/iphone|ipad|ipod/.test(userAgent)) {
+      storeUrl = 'https://apps.apple.com/app/tofit'
+    } else if (/android/.test(userAgent)) {
+      storeUrl = 'https://play.google.com/store/apps/details?id=com.tofit'
+    }
+    
+    window.open(storeUrl, '_blank')
+    toast.success('¡Gracias por calificar ToFit!')
+  }
+
+  // ✅ FUNCIÓN PARA COMPARTIR APP
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'ToFit - Tu plataforma de moda favorita',
+      text: '¡Descubre ToFit y transforma tu estilo personal!',
+      url: 'https://tofit.app'
+    }
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData)
+        toast.success('¡Aplicación compartida!')
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          await fallbackShare(shareData.url)
+        }
+      }
+    } else {
+      await fallbackShare(shareData.url)
+    }
+  }
+
+  // Función auxiliar para compartir
+  const fallbackShare = async (url) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copiado al portapapeles')
+    } catch (err) {
+      console.error('Error copying to clipboard:', err)
+      toast.error('No se pudo copiar el link')
+    }
+  }
+
+  // ✅ FUNCIÓN PARA REDES SOCIALES
+  const handleSocialLinks = () => {
+    const socialMenu = [
+      { name: 'Instagram', url: 'https://instagram.com/tofit' },
+      { name: 'Twitter', url: 'https://twitter.com/tofit' },
+      { name: 'TikTok', url: 'https://tiktok.com/@tofit' },
+      { name: 'LinkedIn', url: 'https://linkedin.com/company/tofit' }
+    ]
+    
+    // Abrir Instagram por defecto
+    window.open(socialMenu[0].url, '_blank')
+    toast.success('¡Síguenos en redes sociales!')
+  }
+
+  // ✅ FUNCIÓN PARA CERRAR SESIÓN
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast.success('Sesión cerrada exitosamente')
+      navigate('/login')
+    } catch (error) {
+      console.error('Error logging out:', error)
+      toast.error('Error al cerrar sesión')
     }
   }
 
@@ -66,9 +230,29 @@ const MenuView = () => {
     }
   }
 
-  // Manejar búsqueda
+  // ✅ MANEJAR BÚSQUEDA CON FUNCIONALIDAD REAL
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value)
+  }
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      // Navegar a página de búsqueda con query
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+    }
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="w-full bg-black text-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Cargando menú...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -118,45 +302,52 @@ const MenuView = () => {
           </h1>
         </div>
 
-        {/* Header del usuario */}
+        {/* ✅ HEADER DEL USUARIO CON DATOS REALES */}
         <div className="flex items-center space-x-4 mb-6">
           <div className="relative">
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-14 h-14 rounded-full object-cover border border-white/10"
+            <UserAvatar 
+              user={userProfile} 
+              size="xl"
+              className="border border-white/10"
             />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-white text-lg font-semibold leading-tight">
-              {user.name}
+              {userProfile?.name || 'Usuario ToFit'}
             </h2>
             <p className="text-gray-400 text-sm mt-1">
-              {user.handle}
+              {userProfile?.handle || '@usuario'}
             </p>
+            {userProfile?.email && (
+              <p className="text-gray-500 text-xs mt-0.5">
+                {userProfile.email}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Barra de búsqueda con diseño específico */}
+        {/* ✅ BARRA DE BÚSQUEDA FUNCIONAL */}
         <div className="mb-10">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+          <form onSubmit={handleSearchSubmit}>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar productos, marcas, usuarios..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="
+                  w-full h-11 pl-12 pr-4 
+                  bg-gray-800 border-0 rounded-lg
+                  text-white placeholder-gray-400 text-base
+                  focus:outline-none focus:ring-2 focus:ring-white/20
+                  transition-all duration-200
+                "
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Buscar"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="
-                w-full h-11 pl-12 pr-4 
-                bg-gray-800 border-0 rounded-lg
-                text-white placeholder-gray-400 text-base
-                focus:outline-none focus:ring-2 focus:ring-white/20
-                transition-all duration-200
-              "
-            />
-          </div>
+          </form>
         </div>
 
         {/* Secciones del menú con espaciado mejorado */}

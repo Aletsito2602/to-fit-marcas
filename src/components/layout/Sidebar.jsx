@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import UserAvatar from '../ui/UserAvatar'
 
 const Sidebar = ({ onClose }) => {
   const { logout, user } = useAuthStore()
@@ -98,11 +99,11 @@ const Sidebar = ({ onClose }) => {
       <div className="p-4 border-t border-border-primary">
         {/* Info del usuario */}
         <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-accent-primary rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
-          </div>
+          <UserAvatar 
+            user={user} 
+            size="lg" 
+            className="ring-2 ring-accent-primary/20" 
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-text-primary truncate">
               {user?.name || 'Usuario'}

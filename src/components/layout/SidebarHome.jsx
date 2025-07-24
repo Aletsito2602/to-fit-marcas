@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import UserAvatar from '../ui/UserAvatar'
 
 const SidebarHome = ({ onClose }) => {
   const { logout, user } = useAuthStore()
@@ -119,9 +120,11 @@ const SidebarHome = ({ onClose }) => {
             onClick={onClose}
             className="w-14 h-14 bg-gray-800/30 hover:bg-gray-700/40 rounded-full flex items-center justify-center transition-all duration-200 group overflow-hidden"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
+            <UserAvatar 
+              user={user} 
+              size="lg" 
+              className="ring-2 ring-gray-600/50 group-hover:ring-gray-400/70" 
+            />
           </NavLink>
         </div>
       </div>

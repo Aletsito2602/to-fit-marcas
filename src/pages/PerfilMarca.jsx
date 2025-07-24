@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { useNavigate } from 'react-router-dom'
-import { Edit3, ChevronDown, Heart, MessageCircle, Share, Camera, Plus } from 'lucide-react'
+import { Edit3, ChevronDown, Heart, MessageCircle, Share, Camera, Plus, ImageIcon, Eye, Bookmark, Globe, Lock, Archive } from 'lucide-react'
 import PostModal from '../components/ui/PostModal'
 import CreatePostModal from '../components/ui/CreatePostModal'
 import { useAuthStore } from '../store/authStore'
@@ -21,7 +21,7 @@ import toast from 'react-hot-toast'
 
 const PerfilMarca = () => {
   const navigate = useNavigate()
-  const { user: currentUser } = useAuthStore()
+  const { user: currentUser, updateUser: updateUserInAuthStore } = useAuthStore()
   
   // Estados del componente
   const [activeTab, setActiveTab] = useState('publicaciones')
@@ -40,6 +40,13 @@ const PerfilMarca = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false)
 
+  // ✅ ESTADOS PARA CÁPSULAS
+  const [userCapsulas, setUserCapsulas] = useState([])
+  const [loadingCapsulas, setLoadingCapsulas] = useState(false)
+  const [selectedCapsulaCategory, setSelectedCapsulaCategory] = useState('todas')
+  const [createCapsulaModalOpen, setCreateCapsulaModalOpen] = useState(false)
+  const [hoveredCapsula, setHoveredCapsula] = useState(null)
+
   const { ref: headerRef, inView: headerInView } = useInView({
     threshold: 0.1,
     triggerOnce: true
@@ -49,6 +56,18 @@ const PerfilMarca = () => {
     { id: 'publicaciones', label: 'Publicaciones', active: true },
     { id: 'capsulas', label: 'Cápsulas', hasDropdown: true },
     { id: 'calendario', label: 'Calendario' }
+  ]
+
+  // ✅ CATEGORÍAS DE CÁPSULAS
+  const capsulaCategories = [
+    { id: 'todas', label: 'Todas', icon: '📂' },
+    { id: 'outfits', label: 'Outfits', icon: '👗' },
+    { id: 'casual', label: 'Casual', icon: '👕' },
+    { id: 'elegante', label: 'Elegante', icon: '🤵' },
+    { id: 'deportivo', label: 'Deportivo', icon: '🏃' },
+    { id: 'nocturno', label: 'Nocturno', icon: '🌙' },
+    { id: 'trabajo', label: 'Trabajo', icon: '💼' },
+    { id: 'temporada', label: 'Temporada', icon: '🌸' }
   ]
 
   // ✅ CARGA COMPLETA DESDE FIREBASE - 100% DINÁMICO
@@ -112,11 +131,23 @@ const PerfilMarca = () => {
         setUserStats(realStats)
         setIsOwnProfile(true) // Siempre es el propio perfil en esta página
         
+        // ✅ SINCRONIZAR DATOS DEL PERFIL CON AUTHSTORE (especialmente avatar)
+        if (profileData.avatar !== currentUser.avatar || profileData.avatar !== currentUser.photoURL) {
+          updateUserInAuthStore({
+            avatar: profileData.avatar,
+            photoURL: profileData.avatar,
+            name: profileData.name
+          })
+        }
+        
         // ✅ CONFIGURAR LISTENER EN TIEMPO REAL PARA POSTS DE FIREBASE - 100% DINÁMICO
         const unsubscribe = getUserPosts(userId, (firebasePosts) => {
           // ✅ SOLO POSTS REALES DE FIREBASE - NO MÁS DATOS MOCK
           setUserPosts(firebasePosts) // Si está vacío, simplemente estará vacío
         })
+        
+        // ✅ CARGAR CÁPSULAS DEL USUARIO
+        loadUserCapsulas(userId)
         
         // Cleanup function
         return () => {
@@ -133,6 +164,73 @@ const PerfilMarca = () => {
 
     loadUserData()
   }, [currentUser])
+
+  // ✅ FUNCIÓN PARA CARGAR CÁPSULAS DEL USUARIO
+  const loadUserCapsulas = async (userId) => {
+    if (!userId) return
+    
+    setLoadingCapsulas(true)
+    try {
+      // Simular carga de cápsulas desde Firebase (por ahora datos mock)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // ✅ DATOS MOCK REALISTAS PARA CÁPSULAS
+      const mockCapsulas = [
+        {
+          id: 'cap_1',
+          title: 'Looks de Oficina',
+          description: 'Outfits elegantes para el trabajo',
+          category: 'trabajo',
+          posts: [
+            { id: 'post_1', imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616c0763a92?w=400&h=400&fit=crop', caption: 'Look formal' },
+            { id: 'post_2', imageUrl: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop', caption: 'Elegante y cómodo' },
+            { id: 'post_3', imageUrl: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop', caption: 'Profesional chic' }
+          ],
+          coverImage: 'https://images.unsplash.com/photo-1494790108755-2616c0763a92?w=400&h=400&fit=crop',
+          createdAt: new Date('2024-01-15'),
+          isPublic: true,
+          likesCount: 45,
+          savesCount: 12
+        },
+        {
+          id: 'cap_2',
+          title: 'Casual Weekend',
+          description: 'Outfits relajados para el fin de semana',
+          category: 'casual',
+          posts: [
+            { id: 'post_4', imageUrl: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop', caption: 'Domingo relajado' },
+            { id: 'post_5', imageUrl: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop', caption: 'Casual chic' }
+          ],
+          coverImage: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop',
+          createdAt: new Date('2024-01-20'),
+          isPublic: true,
+          likesCount: 32,
+          savesCount: 8
+        },
+        {
+          id: 'cap_3',
+          title: 'Night Out',
+          description: 'Looks para salidas nocturnas',
+          category: 'nocturno',
+          posts: [
+            { id: 'post_6', imageUrl: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop', caption: 'Noche especial' }
+          ],
+          coverImage: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop',
+          createdAt: new Date('2024-02-01'),
+          isPublic: false,
+          likesCount: 28,
+          savesCount: 15
+        }
+      ]
+      
+      setUserCapsulas(mockCapsulas)
+    } catch (error) {
+      console.error('Error loading cápsulas:', error)
+      toast.error('Error al cargar cápsulas')
+    } finally {
+      setLoadingCapsulas(false)
+    }
+  }
 
   // Funciones de manejo de eventos
   const handleTabChange = (tabId) => {
@@ -263,6 +361,14 @@ const PerfilMarca = () => {
                   ...prev,
                   banner: updatedProfile.data.banner
                 }))
+                
+                // ✅ ACTUALIZAR TAMBIÉN EL ESTADO GLOBAL DEL USUARIO EN AUTHSTORE SI ES NECESARIO
+                if (updatedProfile.data.avatar && updatedProfile.data.avatar !== currentUser.avatar) {
+                  updateUserInAuthStore({
+                    avatar: updatedProfile.data.avatar,
+                    photoURL: updatedProfile.data.avatar
+                  })
+                }
               }
               
             } else {
@@ -341,6 +447,12 @@ const PerfilMarca = () => {
                   ...prev,
                   avatar: updatedProfile.data.avatar
                 }))
+                
+                // ✅ ACTUALIZAR TAMBIÉN EL ESTADO GLOBAL DEL USUARIO EN AUTHSTORE
+                updateUserInAuthStore({
+                  avatar: updatedProfile.data.avatar,
+                  photoURL: updatedProfile.data.avatar
+                })
               }
               
             } else {
@@ -383,6 +495,26 @@ const PerfilMarca = () => {
   const handleCreateFirstPost = () => {
     setCreatePostModalOpen(true)
   }
+
+  // ✅ FUNCIONES PARA MANEJAR CÁPSULAS
+  const handleCapsulaClick = (capsula) => {
+    // Aquí se podría abrir un modal para ver el detalle de la cápsula
+    console.log('Cápsula seleccionada:', capsula)
+  }
+
+  const handleCreateCapsula = () => {
+    setCreateCapsulaModalOpen(true)
+  }
+
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCapsulaCategory(categoryId)
+    setShowDropdown(false)
+  }
+
+  // Filtrar cápsulas por categoría seleccionada
+  const filteredCapsulas = selectedCapsulaCategory === 'todas' 
+    ? userCapsulas 
+    : userCapsulas.filter(capsula => capsula.category === selectedCapsulaCategory)
 
   // Formatear números para mostrar (10K, 1M, etc.)
   const formatCount = (count) => {
@@ -727,6 +859,197 @@ const PerfilMarca = () => {
               )}
             </>
           )}
+
+          {/* ✅ CONTENIDO DE CÁPSULAS */}
+          {activeTab === 'capsulas' && (
+            <>
+              {/* Dropdown de categorías */}
+              {showDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mb-6 bg-gray-800/50 backdrop-blur-md rounded-lg p-4 border border-gray-700/50"
+                >
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {capsulaCategories.map((category) => (
+                      <motion.button
+                        key={category.id}
+                        onClick={() => handleCategorySelect(category.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          selectedCapsulaCategory === category.id
+                            ? 'bg-white text-black'
+                            : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white'
+                        }`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span className="text-lg">{category.icon}</span>
+                        <span className="font-medium text-sm">{category.label}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {loadingCapsulas ? (
+                // Skeleton loading para cápsulas
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map((index) => (
+                    <div key={index} className="bg-gray-800/50 rounded-lg p-4 animate-pulse">
+                      <div className="aspect-video bg-gray-700/50 rounded-lg mb-3"></div>
+                      <div className="h-4 bg-gray-700/50 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-700/50 rounded w-3/4"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredCapsulas.length > 0 ? (
+                <>
+                  {/* Botón para crear nueva cápsula */}
+                  {isOwnProfile && (
+                    <div className="flex justify-end mb-4">
+                      <motion.button
+                        onClick={handleCreateCapsula}
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-4 h-4" />
+                        Nueva cápsula
+                      </motion.button>
+                    </div>
+                  )}
+
+                  {/* Grid de cápsulas */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {filteredCapsulas.map((capsula, index) => (
+                      <motion.div
+                        key={capsula.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1, duration: 0.4 }}
+                        className="bg-gray-800/30 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700/50 cursor-pointer group"
+                        onClick={() => handleCapsulaClick(capsula)}
+                        onMouseEnter={() => setHoveredCapsula(capsula.id)}
+                        onMouseLeave={() => setHoveredCapsula(null)}
+                        whileHover={{ y: -5, scale: 1.02 }}
+                      >
+                        {/* Cover Image */}
+                        <div className="relative aspect-video overflow-hidden">
+                          <img
+                            src={capsula.coverImage}
+                            alt={capsula.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          
+                          {/* Badge de categoría */}
+                          <div className="absolute top-2 left-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-full text-xs font-medium text-white">
+                              {capsulaCategories.find(cat => cat.id === capsula.category)?.icon}
+                              {capsulaCategories.find(cat => cat.id === capsula.category)?.label}
+                            </span>
+                          </div>
+
+                          {/* Número de posts */}
+                          <div className="absolute top-2 right-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-full text-xs font-medium text-white">
+                              <ImageIcon className="w-3 h-3" />
+                              {capsula.posts.length}
+                            </span>
+                          </div>
+
+                          {/* Overlay con animación */}
+                          <AnimatePresence>
+                            {hoveredCapsula === capsula.id && (
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-black/40 flex items-center justify-center"
+                              >
+                                <motion.div
+                                  initial={{ scale: 0.8 }}
+                                  animate={{ scale: 1 }}
+                                  exit={{ scale: 0.8 }}
+                                  className="text-white text-center"
+                                >
+                                  <Eye className="w-6 h-6 mx-auto mb-1" />
+                                  <span className="text-sm font-medium">Ver cápsula</span>
+                                </motion.div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-white mb-1 group-hover:text-gray-200 transition-colors">
+                            {capsula.title}
+                          </h3>
+                          <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                            {capsula.description}
+                          </p>
+                          
+                          {/* Stats */}
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Heart className="w-3 h-3" />
+                              <span>{capsula.likesCount}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Bookmark className="w-3 h-3" />
+                              <span>{capsula.savesCount}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {capsula.isPublic ? (
+                                <Globe className="w-3 h-3" />
+                              ) : (
+                                <Lock className="w-3 h-3" />
+                              )}
+                              <span>{capsula.isPublic ? 'Público' : 'Privado'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                // Estado vacío para cápsulas
+                <div className="text-center py-16">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-sm mx-auto"
+                  >
+                    <div className="w-24 h-24 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Archive className="w-12 h-12 text-gray-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      {selectedCapsulaCategory === 'todas' ? 'Sin cápsulas aún' : 'Sin cápsulas en esta categoría'}
+                    </h3>
+                    <p className="text-gray-400 mb-6">
+                      {isOwnProfile 
+                        ? 'Crea tu primera cápsula para organizar tus looks favoritos'
+                        : 'Este usuario aún no ha creado cápsulas'
+                      }
+                    </p>
+                    {isOwnProfile && (
+                      <motion.button
+                        onClick={handleCreateCapsula}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-4 h-4" />
+                        Crear primera cápsula
+                      </motion.button>
+                    )}
+                  </motion.div>
+                </div>
+              )}
+            </>
+          )}
         </motion.div>
 
       </div>
@@ -734,7 +1057,10 @@ const PerfilMarca = () => {
       {/* Modal de Post */}
       <PostModal
         isOpen={postModalOpen}
-        onClose={closePostModal}
+        onClose={() => {
+          setPostModalOpen(false)
+          setSelectedPost(null)
+        }}
         post={selectedPost}
         onLike={handlePostLike}
       />

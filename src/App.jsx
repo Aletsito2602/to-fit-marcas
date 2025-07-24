@@ -19,6 +19,7 @@ import MiStatus from './pages/MiStatus'
 import MenuView from './pages/MenuView'
 import Purchases from './pages/Purchases'
 import Favorites from './pages/Favorites'
+import SearchPage from './pages/Search'
 
 // Páginas de configuración del perfil
 import EditarPerfil from './pages/EditarPerfil'
@@ -59,6 +60,7 @@ function App() {
             <Route path="menu" element={<MenuView />} />
             <Route path="purchases" element={<Purchases />} />
             <Route path="favorites" element={<Favorites />} />
+            <Route path="search" element={<SearchPage />} />
             
             {/* Páginas de configuración del perfil */}
             <Route path="editar-perfil" element={<EditarPerfil />} />

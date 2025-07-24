@@ -77,8 +77,8 @@ export const menuStructure = {
       {
         id: "feedback",
         type: "navigation",
-        text: "Feedback",
-        route: "/feedback",
+        text: "Centro de Asistencia",
+        route: "/centro-asistencia",
         external: false
       },
       {
@@ -99,14 +99,21 @@ export const menuStructure = {
         id: "terms",
         type: "navigation",
         text: "Términos y Condiciones",
-        route: "/terms",
+        route: "/politica-privacidad",
         external: false
       },
       {
         id: "privacy",
         type: "navigation",
         text: "Políticas de Privacidad", 
-        route: "/privacy",
+        route: "/privacidad-datos",
+        external: false
+      },
+      {
+        id: "logout",
+        type: "action",
+        text: "Cerrar Sesión",
+        action: "logout",
         external: false
       }
     ]
