@@ -1,0 +1,33 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "productos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "id_tienda",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha_creado",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "id_autor_post",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha_creado",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
