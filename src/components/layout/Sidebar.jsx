@@ -31,9 +31,9 @@ const Sidebar = ({ onClose }) => {
       icon: User,
     },
     {
-      name: 'Perfil Marca',
-      href: '/perfil-marca',
-      icon: Building2,
+      name: 'Mi Perfil',
+      href: '/mi-perfil',
+      icon: User,
     },
     {
       name: 'Servicios',

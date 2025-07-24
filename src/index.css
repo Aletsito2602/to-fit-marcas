@@ -3,6 +3,113 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Variables CSS para el tema ToFit - Componente Menu */
+:root {
+  /* Colores exactos del MEGA PROMPT */
+  --bg-primary: #000000;
+  --bg-secondary: #2A2A2A; 
+  --bg-tertiary: #1F1F1F;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-tertiary: #8A8A8A;
+  --accent-green: #10B981;
+  --border-radius: 8px;
+  
+  /* Espaciados estándar */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Alturas touch-friendly */
+  --touch-target: 44px;
+  --menu-item-height: 52px;
+  
+  /* Tipografía */
+  --font-title: 18px;
+  --font-body: 16px;
+  --font-small: 14px;
+}
+
+/* Estilos base para el cuerpo */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Estilos personalizados para el Menu */
+.menu-container {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.menu-item {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  height: var(--menu-item-height);
+  margin-bottom: var(--spacing-sm);
+  padding: 0 var(--spacing-md);
+}
+
+.menu-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.menu-section-title {
+  color: var(--text-primary);
+  font-size: var(--font-title);
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+}
+
+.menu-item-text {
+  color: var(--text-secondary);
+  font-size: var(--font-body);
+  font-weight: 400;
+}
+
+.menu-chevron {
+  color: var(--text-tertiary);
+  width: 16px;
+  height: 16px;
+}
+
+/* Toggle switch con colores exactos */
+.toggle-active {
+  background-color: var(--accent-green);
+}
+
+.toggle-inactive {
+  background-color: #4B5563; /* gray-600 */
+}
+
+/* Utilidades adicionales */
+.text-menu-primary {
+  color: var(--text-primary);
+}
+
+.text-menu-secondary {
+  color: var(--text-secondary);
+}
+
+.text-menu-tertiary {
+  color: var(--text-tertiary);
+}
+
+.bg-menu-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-menu-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-menu-tertiary {
+  background-color: var(--bg-tertiary);
+}
+
 @layer base {
   html {
     @apply scroll-smooth;
@@ -170,3 +277,5 @@ button:disabled {
   flex: 0 0 100%;
   min-width: 0;
 }
+
+

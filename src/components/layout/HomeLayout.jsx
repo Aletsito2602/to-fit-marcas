@@ -1,15 +1,9 @@
 import { useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import SidebarHome from './SidebarHome'
-import HeaderTabs from '../home/HeaderTabs'
 
 const HomeLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('siguiendo')
-  const location = useLocation()
-
-  // Solo mostrar HeaderTabs en la página Home
-  const showHeaderTabs = location.pathname === '/home'
 
   return (
     <div className="flex h-screen bg-black overflow-hidden">
@@ -21,35 +15,28 @@ const HomeLayout = () => {
         />
       )}
 
-      {/* Sidebar - MEJORADO RESPONSIVE */}
+      {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out
         lg:static lg:inset-0 lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        w-72 sm:w-80 lg:w-72 xl:w-80 2xl:w-[290px]
-      `}>
+        flex-shrink-0
+      `}
+      style={{ width: '240px', minWidth: '240px', maxWidth: '240px' }}>
         <SidebarHome onClose={() => setSidebarOpen(false)} />
       </div>
 
-      {/* Contenido principal - RESPONSIVE MEJORADO */}
-      <div className="flex-1 flex flex-col min-h-0 relative">
-        {/* Header Tabs - Solo en Home - RESPONSIVE */}
-        {showHeaderTabs && (
-          <HeaderTabs 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab}
-          />
-        )}
-        
-        {/* Área de contenido principal - PADDING RESPONSIVO */}
-        <main className="flex-1 bg-black relative overflow-hidden">
-          <div className="h-full w-full">
-            <Outlet context={{ activeTab, setActiveTab }} />
+      {/* Contenido principal */}
+      <div className="flex-1 flex flex-col relative h-full">
+        {/* Área de contenido principal */}
+        <main className="flex-1 bg-black relative overflow-hidden h-full">
+          <div className="w-full h-full">
+            <Outlet />
           </div>
         </main>
       </div>
 
-      {/* Botón menú hamburguesa - RESPONSIVE MEJORADO */}
+      {/* Botón menú hamburguesa */}
       <button
         onClick={() => setSidebarOpen(true)}
         className="fixed top-4 left-4 sm:top-6 sm:left-6 z-40 lg:hidden 

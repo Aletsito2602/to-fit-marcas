@@ -1,30 +1,54 @@
-import { useOutletContext } from 'react-router-dom'
-import TinderCards from '../components/home/TinderCards'
+import { useState } from 'react';
+import TinderCardsContainer from '../components/home/TinderCardsContainer';
 
-const Home = () => {
-  const { activeTab } = useOutletContext()
+// Componente de pestañas integrado en Home
+const TabNavigation = ({ activeTab, onTabChange }) => {
+  const tabs = [
+    { id: 'siguiendo', label: 'Siguiendo' },
+    { id: 'inspiracion', label: 'Inspiración' }
+  ];
 
   return (
-    <div className="h-full flex items-center justify-center overflow-hidden 
-                    p-2 sm:p-3 md:p-4 lg:p-6">
-      {activeTab === 'siguiendo' && <TinderCards />}
-      {activeTab === 'inspiracion' && (
-        <div className="flex items-center justify-center h-full w-full 
-                        px-4 sm:px-6 md:px-8 lg:px-12">
-          <div className="text-center text-white max-w-md sm:max-w-lg md:max-w-xl">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl 
-                           font-bold mb-3 sm:mb-4 md:mb-6">
-              Inspiración
-            </h2>
-            <p className="text-lg sm:text-xl md:text-2xl 
-                          text-gray-400 leading-relaxed">
-              Contenido de inspiración próximamente...
-          </p>
-        </div>
-        </div>
-      )}
+    <div className="flex items-center justify-center py-4 px-4 bg-black border-b border-gray-800">
+      <div className="flex items-center justify-center space-x-8 w-full max-w-md">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`font-medium transition-all duration-300 relative px-4 py-2 text-base text-center ${
+              activeTab === tab.id
+                ? 'text-white'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            <span className="block text-center">{tab.label}</span>
+            {activeTab === tab.id && (
+              <div className="absolute -bottom-3 left-0 right-0 h-0.5 bg-white rounded-full" />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home 
+const Home = () => {
+  // Estado local para las pestañas
+  const [activeTab, setActiveTab] = useState('siguiendo');
+
+  console.log('🏠 Home component render:', { activeTab });
+
+  return (
+    <div className="w-full h-full bg-black flex flex-col">
+      {/* Pestañas integradas */}
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      {/* Contenedor de Tinder Cards */}
+      <div className="flex-1 overflow-hidden h-full">
+        <TinderCardsContainer activeTab={activeTab} />
+      </div>
+    </div>
+  );
+};
+
+export default Home; 

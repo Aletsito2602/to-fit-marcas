@@ -1,75 +1,69 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { Mail, ArrowLeft } from 'lucide-react'
-import ButtonGray from '../../components/ui/ButtonGray'
-import Button from '../../components/ui/Button'
-import InputMinimal from '../../components/ui/InputMinimal'
+import { useAuthStore } from '../../store/authStore'
 
 const ForgotPassword = () => {
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    getValues
-  } = useForm()
+  const [error, setError] = useState('')
+  const { resetPassword, isLoading } = useAuthStore()
 
-  const onSubmit = async (data) => {
-    setIsLoading(true)
+  const validateEmail = (email) => {
+    return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
     
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000))
+    if (!email) {
+      setError('El email es requerido')
+      return
+    }
+    
+    if (!validateEmail(email)) {
+      setError('Email inválido')
+      return
+    }
+    
+    const result = await resetPassword(email)
+    
+    if (result.success) {
       setEmailSent(true)
-    } catch (error) {
-      console.error('Error enviando email de recuperación:', error)
-    } finally {
-      setIsLoading(false)
+    } else {
+      setError(result.error)
     }
   }
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background-primary px-4 py-8 sm:px-6 lg:px-8">
-        <div className="max-w-sm w-full space-y-8">
-          <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-accent-success rounded-2xl flex items-center justify-center mb-6">
-              <Mail className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-text-primary">
+      <div className="min-h-screen bg-black flex items-center justify-center px-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <div className="w-full max-w-[400px] mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-white text-[24px] font-semibold mb-4">
               Email enviado
-            </h2>
-            <p className="mt-4 text-text-secondary text-sm sm:text-base">
+            </h1>
+            <p className="text-[#CCCCCC] text-sm">
               Te hemos enviado un enlace de recuperación a{' '}
-              <span className="font-medium text-text-primary break-all">
-                {getValues('email')}
-              </span>
+              <span className="text-white font-medium">{email}</span>
             </p>
           </div>
-
-          <div className="space-y-6">
-            <p className="text-center text-text-secondary text-sm sm:text-base">
-              Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.
-            </p>
+          
+          <div className="space-y-4">
+            <button
+              onClick={() => setEmailSent(false)}
+              className="w-full bg-[#333333] hover:bg-[#444444] text-white py-3 px-10 rounded-md font-medium transition-all duration-300"
+              style={{ borderRadius: '6px', padding: '12px 40px' }}
+            >
+              Enviar de nuevo
+            </button>
             
-            <div className="space-y-4">
-              <Button
-                onClick={() => setEmailSent(false)}
-                variant="outline"
-                className="w-full min-h-[48px]"
-              >
-                Enviar de nuevo
-              </Button>
-              
-              <Link
-                to="/login"
-                className="block w-full text-center text-accent-primary hover:text-accent-secondary font-medium transition-colors py-2"
-              >
-                Volver al inicio de sesión
-              </Link>
-            </div>
+            <Link
+              to="/login"
+              className="block text-[#CCCCCC] hover:text-white transition-colors duration-300 text-sm"
+            >
+              Volver al inicio de sesión
+            </Link>
           </div>
         </div>
       </div>
@@ -77,57 +71,53 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-primary px-4 py-8 sm:px-6 lg:px-8">
-      <div className="max-w-sm w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-2xl sm:text-3xl font-display font-bold text-text-primary">
+    <div className="min-h-screen bg-black flex items-center justify-center px-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="w-full max-w-[400px] mx-auto">
+        {/* Título */}
+        <div className="text-center mb-8">
+          <h1 className="text-white text-[24px] font-semibold">
             ¿Olvidaste tu contraseña?
-          </h2>
-          <p className="mt-4 text-text-secondary text-sm sm:text-base">
-            Ingresa tu email y te enviaremos un enlace para recuperarla
-          </p>
+          </h1>
         </div>
 
         {/* Formulario */}
-        <div className="space-y-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {/* Email */}
-            <InputMinimal
-              label="Email"
-              type="email"
-              placeholder="tu@email.com"
-              error={errors.email?.message}
-              {...register('email', {
-                required: 'El email es requerido',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Email inválido'
-                }
-              })}
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Error */}
+          {error && (
+            <div className="text-red-400 text-sm text-center mb-4">
+              {error}
+            </div>
+          )}
 
-            {/* Botón enviar */}
-            <ButtonGray
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="block text-white text-sm font-medium">
+              Email
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                                 className="w-full bg-transparent text-white placeholder-gray-500 border-0 border-b border-white focus:border-white focus:outline-none focus:ring-0 py-3 text-base transition-all duration-300"
+                style={{ borderBottomWidth: '1px' }}
+              />
+            </div>
+          </div>
+
+          {/* Botón enviar */}
+          <div className="mt-6">
+            <button
               type="submit"
-              loading={isLoading}
-              className="w-full"
+              disabled={isLoading}
+              className="w-full bg-[#333333] hover:bg-[#444444] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 px-10 rounded-md font-medium transition-all duration-300"
+              style={{ borderRadius: '6px', padding: '12px 40px' }}
             >
-              Enviar
-            </ButtonGray>
-          </form>
-        </div>
-
-        {/* Volver al login */}
-        <div className="text-center">
-          <Link 
-            to="/login"
-            className="inline-flex items-center text-accent-primary hover:text-accent-secondary font-medium transition-colors text-sm sm:text-base"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver al inicio de sesión
-          </Link>
-        </div>
+              {isLoading ? 'Enviando...' : 'Enviar'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

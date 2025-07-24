@@ -1,9 +1,29 @@
-import { useState, useEffect, useRef } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Stories from '../components/ui/Stories'
+import ProductCard from '../components/ui/ProductCard'
+import { useShopData } from '../hooks/useFirestore'
+import { useAuthStore } from '../store/authStore'
+import { 
+  TiendaCompleteSkeleton,
+  HeroEmptyState,
+  BrandsEmptyState,
+  CategoriesEmptyState,
+  InfluencersEmptyState,
+  ProductsEmptyState,
+  FeaturedStoresSkeleton
+} from '../components/ui/SkeletonLoaders'
+import {
+  processHeroCollections,
+  processBrandCollections,
+  processCategories,
+  processInfluencerLooks,
+  processFeaturedStores,
+  processPersonalizedSuggestions
+} from '../utils/tiendaAlgorithms'
+import { useAnalytics, initializeAnalytics } from '../utils/analytics'
 
 // Mock data para las colecciones del hero banner
 const heroCollections = [
@@ -168,7 +188,7 @@ const influencerLooks = [
     id: 2,
     image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=400&fit=crop",
     influencer: "@stylequeen",
-    price: "$145"
+    price: "$45"
   },
   {
     id: 3,
@@ -231,8 +251,104 @@ const featuredStores = [
   }
 ]
 
+// Mock data para productos - Sugerencias para ti
+const productos = [
+  {
+    id: 1,
+    nombre: "Vestido Textura Cut Out",
+    marca: { nombre: "Zara", icono: "Z", color: "#000000" },
+    imagen: "https://images.unsplash.com/photo-1494790108755-2616c0763a92?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$80.900",
+    precioAnterior: "$89.000",
+    isFavorito: false
+  },
+  {
+    id: 2, 
+    nombre: "Pantalón Dijon Wide Leg",
+    marca: { nombre: "Juvia", icono: "J", color: "#8B7355" },
+    imagen: "https://images.unsplash.com/photo-1506629905057-46ac5b127cdb?w=400&h=600&fit=crop&crop=center", 
+    precioActual: "$23.999",
+    precioAnterior: "$28.999",
+    isFavorito: false
+  },
+  {
+    id: 3,
+    nombre: "Sportswear Club Essentials", 
+    marca: { nombre: "Adidas", icono: "A", color: "#000000" },
+    imagen: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$44.999", 
+    precioAnterior: null,
+    isFavorito: false
+  },
+  {
+    id: 4,
+    nombre: "Top Ice Cream",
+    marca: { nombre: "Guzmán", icono: "G", color: "#F59E0B" }, 
+    imagen: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$139.000",
+    precioAnterior: null,
+    isFavorito: false
+  },
+  {
+    id: 5,
+    nombre: "Blazer Ejecutivo", 
+    marca: { nombre: "Hugo Boss", icono: "H", color: "#000000" },
+    imagen: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$189.999", 
+    precioAnterior: "$220.000",
+    isFavorito: false
+  },
+  {
+    id: 6,
+    nombre: "Falda Plisada",
+    marca: { nombre: "Zara", icono: "Z", color: "#000000" },
+    imagen: "https://images.unsplash.com/photo-1583496661160-fb5886a13d77?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$45.900",
+    precioAnterior: null,
+    isFavorito: false
+  },
+  {
+    id: 7,
+    nombre: "Camisa Lino",
+    marca: { nombre: "Mango", icono: "M", color: "#FF6B00" },
+    imagen: "https://images.unsplash.com/photo-1564257577154-75f0408d2b65?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$67.999",
+    precioAnterior: "$78.000",
+    isFavorito: false
+  },
+  {
+    id: 8,
+    nombre: "Pantalón Cargo",
+    marca: { nombre: "Bershka", icono: "B", color: "#1A1A1A" },
+    imagen: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$35.999",
+    precioAnterior: null,
+    isFavorito: false
+  },
+  {
+    id: 9,
+    nombre: "Top Crop",
+    marca: { nombre: "Pull&Bear", icono: "P", color: "#0066CC" },
+    imagen: "https://images.unsplash.com/photo-1545291730-faff8ca1d4b0?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$25.999",
+    precioAnterior: "$32.000",
+    isFavorito: false
+  },
+  {
+    id: 10,
+    nombre: "Vestido Midi",
+    marca: { nombre: "H&M", icono: "H", color: "#E50010" },
+    imagen: "https://images.unsplash.com/photo-1572804013427-4d7ca7268217?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$59.999",
+    precioAnterior: null,
+    isFavorito: true
+  }
+]
+
 const Tienda = () => {
-  const { activeTab } = useOutletContext()
+  const { user: currentUser } = useAuthStore()
+  
+  // Estados para carrusel y UI
   const [currentSlide, setCurrentSlide] = useState(0)
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   
@@ -241,11 +357,131 @@ const Tienda = () => {
   const [currentStories, setCurrentStories] = useState([])
   const [initialStoryIndex, setInitialStoryIndex] = useState(0)
   
+  // Estados para productos y favoritos
+  const [favoriteProducts, setFavoriteProducts] = useState(new Set())
+  const [viewedProducts, setViewedProducts] = useState([])
+  
   // Refs y estado para drag scroll
   const scrollRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
+  
+  // Analytics
+  const analytics = useAnalytics()
+  
+  // Firebase data
+  const {
+    marcas,
+    productos,
+    publicaciones,
+    tiendas,
+    categorias,
+    influencers,
+    lookPosts,
+    promotions,
+    userPedidos,
+    isLoading,
+    hasError,
+    errors
+  } = useShopData(currentUser)
+  
+  // Performance tracking
+  const [loadStartTime] = useState(() => performance.now())
+
+  // ========================================
+  // PROCESSED DATA - Algoritmos dinámicos
+  // ========================================
+
+  // Hero Collections dinámicas desde Firebase
+  const heroCollections = useMemo(() => {
+    if (!publicaciones?.length || !marcas?.length) return []
+    const processed = processHeroCollections(publicaciones, marcas)
+    
+    // Track analytics solo si hay datos
+    if (processed.length > 0) {
+      analytics.trackHeroBannerView(processed)
+    }
+    
+    return processed
+  }, [publicaciones, marcas, analytics])
+
+  // Brand Collections dinámicas
+  const brandCollections = useMemo(() => {
+    if (!marcas?.length) return []
+    return processBrandCollections(marcas, tiendas, productos)
+  }, [marcas, tiendas, productos])
+
+  // Categorías dinámicas con algoritmos personalizados
+  const dynamicCategories = useMemo(() => {
+    if (!categorias?.length || !productos?.length) return []
+    return processCategories(
+      categorias, 
+      productos, 
+      currentUser, 
+      [], // userHistory - TODO: implementar tracking de historial
+      lookPosts, 
+      [] // userInteractions - TODO: implementar tracking de interacciones
+    )
+  }, [categorias, productos, currentUser, lookPosts])
+
+  // Influencer Looks procesados
+  const influencerLooks = useMemo(() => {
+    if (!influencers?.length || !lookPosts?.length) return []
+    return processInfluencerLooks(influencers, lookPosts, productos, marcas)
+  }, [influencers, lookPosts, productos, marcas])
+
+  // Featured Stores desde promociones
+  const featuredStores = useMemo(() => {
+    if (!promotions?.length || !tiendas?.length || !marcas?.length) return []
+    return processFeaturedStores(promotions, tiendas, marcas)
+  }, [promotions, tiendas, marcas])
+
+  // Sugerencias personalizadas
+  const personalizedSuggestions = useMemo(() => {
+    if (!productos?.length || !marcas?.length) return []
+    
+    const suggestions = processPersonalizedSuggestions(
+      productos,
+      marcas,
+      currentUser,
+      userPedidos,
+      [], // userInteractions - TODO: implementar
+      viewedProducts
+    )
+    
+    // Track impression de recomendaciones
+    if (suggestions.length > 0 && currentUser) {
+      analytics.trackRecommendationImpression(suggestions, 'personalized')
+    }
+    
+    return suggestions
+  }, [productos, marcas, currentUser, userPedidos, viewedProducts, analytics])
+
+  // ========================================
+  // EFFECTS Y INICIALIZACIÓN
+  // ========================================
+
+  // Inicializar analytics cuando los datos estén listos
+  useEffect(() => {
+    if (!isLoading && currentUser) {
+      initializeAnalytics(currentUser)
+      analytics.trackLoadTime('tienda_complete', loadStartTime)
+    }
+  }, [isLoading, currentUser, analytics, loadStartTime])
+
+  // Track section views cuando los datos cambian
+  useEffect(() => {
+    if (!isLoading) {
+      analytics.trackSectionView('hero_collections', heroCollections.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('brand_collections', brandCollections.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('categories', dynamicCategories.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('influencer_looks', influencerLooks.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('featured_stores', featuredStores.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('personalized_suggestions', personalizedSuggestions.length, performance.now() - loadStartTime)
+    }
+  }, [isLoading, heroCollections.length, brandCollections.length, dynamicCategories.length, 
+      influencerLooks.length, featuredStores.length, personalizedSuggestions.length, analytics, loadStartTime])
 
   // Auto-play del hero banner
   useEffect(() => {
@@ -320,8 +556,18 @@ const Tienda = () => {
     setIsDragging(false)
   }
 
+  // ========================================
+  // EVENT HANDLERS - Con analytics integrado
+  // ========================================
+
   // Funciones para abrir historias por sección
   const openHeroStories = (index) => {
+    const collaboration = heroCollections[index]
+    if (!collaboration) return
+    
+    // Track analytics
+    analytics.trackHeroBannerClick(collaboration)
+    
     const stories = heroCollections.map(collection => ({
       id: collection.id,
       title: collection.brand,
@@ -335,6 +581,12 @@ const Tienda = () => {
   }
 
   const openBrandStories = (index) => {
+    const marca = brandCollections[index]
+    if (!marca) return
+    
+    // Track analytics
+    analytics.trackBrandCollectionClick(marca)
+    
     const stories = brandCollections.map(brand => ({
       id: brand.id,
       title: brand.brand,
@@ -348,11 +600,17 @@ const Tienda = () => {
   }
 
   const openCategoryStories = (index) => {
-    const stories = categories.map(category => ({
-      id: category.id,
-      title: category.name,
+    const category = dynamicCategories[index]
+    if (!category) return
+    
+    // Track analytics
+    analytics.trackCategoryClick(category)
+    
+    const stories = dynamicCategories.map(cat => ({
+      id: cat.id,
+      title: cat.name,
       subtitle: "Descubre nuestra selección",
-      image: category.image,
+      image: cat.image,
       action: "Ver Productos"
     }))
     setCurrentStories(stories)
@@ -361,12 +619,18 @@ const Tienda = () => {
   }
 
   const openInfluencerStories = (index) => {
-    const stories = influencerLooks.map(look => ({
-      id: look.id,
+    const influencer = influencerLooks[index]
+    if (!influencer) return
+    
+    // Track analytics
+    analytics.trackInfluencerLookClick(influencer, 0)
+    
+    const stories = influencerLooks.map(inf => ({
+      id: inf.id,
       title: "Look Influencer",
-      subtitle: look.influencer,
-      price: look.price,
-      image: look.image,
+      subtitle: inf.handle,
+      price: inf.total_price,
+      image: inf.main_look_image,
       action: "Comprar Look"
     }))
     setCurrentStories(stories)
@@ -375,12 +639,18 @@ const Tienda = () => {
   }
 
   const openStoreStories = (index) => {
-    const stories = featuredStores.map(store => ({
-      id: store.id,
-      title: store.name,
-      subtitle: store.subtitle,
-      image: store.image,
-      action: store.featured ? "Ver Ahora" : "Explorar Tienda"
+    const store = featuredStores[index]
+    if (!store) return
+    
+    // Track analytics
+    analytics.trackFeaturedStoreClick(store)
+    
+    const stories = featuredStores.map(st => ({
+      id: st.id,
+      title: st.name,
+      subtitle: st.subtitle,
+      image: st.image,
+      action: st.featured ? "Ver Ahora" : "Explorar Tienda"
     }))
     setCurrentStories(stories)
     setInitialStoryIndex(index)
@@ -393,17 +663,84 @@ const Tienda = () => {
     setInitialStoryIndex(0)
   }
 
+  // Manejadores para productos
+  const handleProductClick = (producto, section = 'suggestions') => {
+    // Track analytics
+    analytics.trackProductClick(producto, section)
+    
+    // Agregar a productos vistos
+    setViewedProducts(prev => {
+      const newViewed = [...prev.filter(id => id !== producto.id), producto.id]
+      return newViewed.slice(-50) // Mantener solo los últimos 50
+    })
+    
+    console.log('Producto seleccionado:', producto)
+    // TODO: Implementar navegación a página de producto o modal
+  }
+
+  const handleFavoriteToggle = (productId, isFavorite, producto, section = 'suggestions') => {
+    // Track analytics
+    analytics.trackProductFavorite(producto, isFavorite, section)
+    
+    setFavoriteProducts(prev => {
+      const newSet = new Set(prev)
+      if (isFavorite) {
+        newSet.add(productId)
+      } else {
+        newSet.delete(productId)
+      }
+      return newSet
+    })
+    
+    // TODO: Sincronizar con Firebase - guardar favoritos del usuario
+  }
+
+  const handleProductShare = (producto, section = 'suggestions') => {
+    // Track analytics
+    analytics.trackProductShare(producto, section)
+    
+    // TODO: Implementar funcionalidad de compartir
+    console.log('Compartir producto:', producto.nombre)
+  }
+
+  const handleVerMas = () => {
+    // Track analytics
+    analytics.trackSectionView('ver_mas_clicked', personalizedSuggestions.length, 0)
+    
+    console.log('Ver más productos')
+    // TODO: Implementar navegación a página de catálogo completo con filtros
+  }
+
+  // ========================================
+  // RENDER CONDICIONAL
+  // ========================================
+
+  // Mostrar skeleton mientras cargan los datos
+  if (isLoading) {
+    return <TiendaCompleteSkeleton />
+  }
+
+  // Mostrar error si hay problemas graves
+  if (hasError) {
+    console.error('Errores en tienda:', errors)
+    // Continuar renderizando con datos parciales
+  }
+
   // Tienda siempre muestra el contenido completo independientemente del tab
   return (
     <div className="w-full h-full bg-black text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
-      <div className="w-full h-full overflow-y-auto overflow-x-hidden">
-        <div className="w-full px-1 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 space-y-4 sm:space-y-6 md:space-y-8 pb-20">
+
+      
+      <div className="w-full h-full overflow-y-auto">
+        <div className="w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6 pb-20">
           
-          {/* Hero Banner con Carrusel - SIN TOCAR */}
+          {/* Hero Banner con Carrusel - DINÁMICO */}
           <section className="w-full">
-            <div className="overflow-hidden rounded-xl sm:rounded-2xl relative" ref={emblaRef}>
-              <div className="flex">
-                {heroCollections.map((collection, index) => (
+            {heroCollections.length > 0 ? (
+              <>
+                <div className="overflow-hidden rounded-xl sm:rounded-2xl relative" ref={emblaRef}>
+                  <div className="flex">
+                    {heroCollections.map((collection, index) => (
                   <div key={collection.id} className="flex-[0_0_100%] min-w-0">
                     <div 
                       className="relative h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 2xl:h-96 
@@ -446,37 +783,42 @@ const Tienda = () => {
               </div>
             </div>
 
-            {/* Puntos de navegación - RESPONSIVE */}
-            <div className="flex justify-center mt-3 sm:mt-4 md:mt-5 lg:mt-6 space-x-2 sm:space-x-3">
-              {heroCollections.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollTo(index)}
-                  className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
-                    currentSlide === index ? 'bg-white' : 'bg-white/30'
-                  }`}
-                />
-              ))}
-            </div>
+                {/* Puntos de navegación - RESPONSIVE */}
+                <div className="flex justify-center mt-3 sm:mt-4 md:mt-5 lg:mt-6 space-x-2 sm:space-x-3">
+                  {heroCollections.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => scrollTo(index)}
+                      className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
+                        currentSlide === index ? 'bg-white' : 'bg-white/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <HeroEmptyState />
+            )}
           </section>
 
-          {/* Sección de Marcas/Colecciones - MÓVIL OPTIMIZADO */}
+          {/* Sección de Marcas/Colecciones - DINÁMICO */}
           <section className="w-full">
-            <div className="w-full">
-              <div 
-                ref={scrollRef}
-                className="w-full overflow-x-auto scrollbar-hide cursor-grab select-none"
-                onMouseDown={handleMouseDown}
-                onMouseLeave={handleMouseLeave}
-                onMouseUp={handleMouseUp}
-                onMouseMove={handleMouseMove}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                style={{ scrollBehavior: 'smooth' }}
-              >
-                <div className="flex gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 pb-4 min-w-max px-1">
-                  {brandCollections.map((brand, index) => (
+            {brandCollections.length > 0 ? (
+              <div className="w-full">
+                <div 
+                  ref={scrollRef}
+                  className="w-full overflow-x-auto scrollbar-hide cursor-grab select-none"
+                  onMouseDown={handleMouseDown}
+                  onMouseLeave={handleMouseLeave}
+                  onMouseUp={handleMouseUp}
+                  onMouseMove={handleMouseMove}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  style={{ scrollBehavior: 'smooth' }}
+                >
+                  <div className="flex gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 pb-4 min-w-max px-1">
+                    {brandCollections.map((brand, index) => (
                     <motion.div
                       key={brand.id}
                       className="flex-shrink-0 
@@ -551,24 +893,28 @@ const Tienda = () => {
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <BrandsEmptyState />
+            )}
           </section>
 
-          {/* Sección de Categorías - RESPONSIVE MEJORADO */}
+          {/* Sección de Categorías - DINÁMICO */}
           <section className="w-screen -ml-1 sm:w-full sm:ml-0">
-            <div className="w-full max-w-full px-3 sm:px-0">
-              {/* Grid responsivo optimizado para móvil */}
-              <div className="grid grid-cols-1 gap-3 
-                              xs:grid-cols-1 xs:gap-3
-                              sm:grid-cols-2 sm:gap-4 
-                              md:grid-cols-3 md:gap-5 
-                              lg:grid-cols-4 lg:gap-6 
-                              xl:grid-cols-5 xl:gap-6 
-                              w-full">
-                {categories.map((category, index) => (
+            {dynamicCategories.length > 0 ? (
+              <div className="w-full max-w-full px-3 sm:px-0">
+                {/* Grid responsivo optimizado para móvil */}
+                <div className="grid grid-cols-1 gap-3 
+                                xs:grid-cols-1 xs:gap-3
+                                sm:grid-cols-2 sm:gap-4 
+                                md:grid-cols-3 md:gap-5 
+                                lg:grid-cols-4 lg:gap-6 
+                                xl:grid-cols-5 xl:gap-6 
+                                w-full">
+                  {dynamicCategories.map((category, index) => (
                   <motion.div
                     key={category.id}
                     className="w-full 
@@ -624,32 +970,36 @@ const Tienda = () => {
                                     bg-gradient-to-r from-transparent via-white/10 to-transparent 
                                     transform -skew-x-12 -translate-x-full group-hover:translate-x-full 
                                     transition-all duration-700 ease-out" />
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <CategoriesEmptyState />
+            )}
           </section>
 
-          {/* Sección de Looks de Influencers */}
+          {/* Sección de Looks de Influencers - DINÁMICO */}
           <section className="w-screen -ml-1 sm:w-full sm:ml-0">
-            <div className="w-full max-w-full px-3 sm:px-0">
-              {/* Título de la sección */}
-              <div className="mb-6 sm:mb-8">
-                <h2 className="text-white font-bold text-left
-                               text-sm leading-tight tracking-wide
-                               sm:text-base sm:leading-tight
-                               md:text-lg md:leading-tight
-                               lg:text-xl lg:leading-tight
-                               xl:text-2xl xl:leading-tight
-                               uppercase">
-                  COMPRA LOS LOOKS DE LOS INFLUENCERS QUE MÁS TE GUSTAN
-                </h2>
-              </div>
+            {influencerLooks.length > 0 ? (
+              <div className="w-full max-w-full px-3 sm:px-0">
+                {/* Título de la sección */}
+                <div className="mb-6 sm:mb-8">
+                  <h2 className="text-white font-bold text-left
+                                 text-sm leading-tight tracking-wide
+                                 sm:text-base sm:leading-tight
+                                 md:text-lg md:leading-tight
+                                 lg:text-xl lg:leading-tight
+                                 xl:text-2xl xl:leading-tight
+                                 uppercase">
+                    COMPRA LOS LOOKS DE LOS INFLUENCERS QUE MÁS TE GUSTAN
+                  </h2>
+                </div>
 
-              {/* Scroll horizontal de looks */}
-              <div className="w-full overflow-x-auto scrollbar-hide">
-                <div className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 pb-4 min-w-max">
-                  {influencerLooks.map((look, index) => (
+                {/* Scroll horizontal de looks */}
+                <div className="w-full overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 pb-4 min-w-max">
+                    {influencerLooks.map((look, index) => (
                                          <motion.div
                        key={look.id}
                        className="flex-shrink-0 
@@ -688,14 +1038,17 @@ const Tienda = () => {
                                       bg-gradient-to-r from-transparent via-white/10 to-transparent 
                                       transform -skew-x-12 -translate-x-full group-hover:translate-x-full 
                                       transition-all duration-700 ease-out" />
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <InfluencersEmptyState />
+            )}
           </section>
 
-          {/* Sección Explora Tiendas */}
+          {/* Sección Explora Tiendas - DINÁMICO */}
           <section className="w-screen -ml-1 sm:w-full sm:ml-0">
             <div className="w-full max-w-full px-3 sm:px-0">
               {/* Header de la sección */}
@@ -715,48 +1068,53 @@ const Tienda = () => {
 
               {/* Scroll horizontal de tiendas - Una sola fila */}
               <div className="w-full overflow-x-auto scrollbar-hide">
-                <div className="flex gap-4 sm:gap-5 md:gap-6 lg:gap-8 pb-4 min-w-max">
+                {featuredStores.length === 0 ? (
+                  <FeaturedStoresSkeleton />
+                ) : (
+                  <div className="flex gap-4 sm:gap-5 md:gap-6 lg:gap-8 pb-4 min-w-max">
                   
                   {/* Card principal - Nueva Colección */}
-                  <motion.div
-                    className="flex-shrink-0
-                               w-64 h-48 sm:w-72 sm:h-52 md:w-80 md:h-56 lg:w-96 lg:h-64 xl:w-[420px] xl:h-72
-                               rounded-xl sm:rounded-2xl overflow-hidden relative cursor-pointer group
-                               shadow-lg hover:shadow-2xl transition-all duration-300"
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => openStoreStories(0)}
-                  >
-                    <div 
-                      className="w-full h-full bg-cover bg-center transform group-hover:scale-105 transition-transform duration-500"
-                      style={{ backgroundImage: `url(${featuredStores[0].image})` }}
-                    />
-                    
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/60 
-                                    group-hover:from-black/70 group-hover:via-black/40 group-hover:to-black/70
-                                    transition-all duration-300" />
-                    
-                    {/* Contenido centrado */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <h3 className="text-white font-bold 
-                                       text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl
-                                       mb-3 sm:mb-4 drop-shadow-lg
-                                       group-hover:scale-105 transition-transform duration-300">
-                          {featuredStores[0].name}
-                        </h3>
-                        <button className="bg-white text-black px-6 py-3 sm:px-8 sm:py-4 
-                                           rounded-full font-medium text-sm sm:text-base md:text-lg
-                                           hover:bg-gray-100 transition-colors duration-200
-                                           group-hover:scale-105 transform transition-transform">
-                          {featuredStores[0].subtitle}
-                        </button>
+                  {featuredStores.length > 0 && (
+                    <motion.div
+                      className="flex-shrink-0
+                                 w-64 h-48 sm:w-72 sm:h-52 md:w-80 md:h-56 lg:w-96 lg:h-64 xl:w-[420px] xl:h-72
+                                 rounded-xl sm:rounded-2xl overflow-hidden relative cursor-pointer group
+                                 shadow-lg hover:shadow-2xl transition-all duration-300"
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => openStoreStories(0)}
+                    >
+                      <div 
+                        className="w-full h-full bg-cover bg-center transform group-hover:scale-105 transition-transform duration-500"
+                        style={{ backgroundImage: `url(${featuredStores[0].image})` }}
+                      />
+                      
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/60 
+                                      group-hover:from-black/70 group-hover:via-black/40 group-hover:to-black/70
+                                      transition-all duration-300" />
+                      
+                      {/* Contenido centrado */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <h3 className="text-white font-bold 
+                                         text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl
+                                         mb-3 sm:mb-4 drop-shadow-lg
+                                         group-hover:scale-105 transition-transform duration-300">
+                            {featuredStores[0].name}
+                          </h3>
+                          <button className="bg-white text-black px-6 py-3 sm:px-8 sm:py-4 
+                                             rounded-full font-medium text-sm sm:text-base md:text-lg
+                                             hover:bg-gray-100 transition-colors duration-200
+                                             group-hover:scale-105 transform transition-transform">
+                            {featuredStores[0].subtitle}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  )}
 
                   {/* Cards secundarias de tiendas */}
                   {featuredStores.slice(1).map((store, index) => (
@@ -802,9 +1160,136 @@ const Tienda = () => {
                                       transition-all duration-700 ease-out" />
                     </motion.div>
                   ))}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
+          </section>
+
+          {/* Sección de Sugerencias Para Ti - DINÁMICO */}
+          <section className="w-screen -ml-1 sm:w-full sm:ml-0">
+            {personalizedSuggestions.length > 0 ? (
+              <div className="w-full max-w-full px-3 sm:px-0">
+                {/* Título de la sección */}
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <h2 className="text-white font-bold text-left
+                                 text-lg sm:text-xl md:text-2xl lg:text-3xl">
+                    {currentUser ? 'Sugerencias Para Ti' : 'Productos Populares'}
+                  </h2>
+                  <button 
+                    onClick={handleVerMas}
+                    className="text-gray-400 hover:text-white font-medium transition-colors duration-200 
+                               flex items-center gap-1 sm:gap-2 text-sm sm:text-base flex-shrink-0"
+                  >
+                    Ver Más
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+                {/* Scroll horizontal de productos */}
+                <div className="w-full overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-4 sm:gap-5 md:gap-6 pb-4 min-w-max">
+                    {personalizedSuggestions.map((producto, index) => (
+                    <motion.div
+                      key={producto.id}
+                      className="flex-shrink-0 cursor-pointer group"
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => handleProductClick(producto, 'suggestions')}
+                    >
+                      <div className="w-48 sm:w-52 md:w-56 lg:w-60 xl:w-64">
+                        {/* Contenedor de imagen */}
+                        <div className="relative w-full aspect-[4/5] mb-3 rounded-2xl overflow-hidden 
+                                        group-hover:scale-[1.02] transition-all duration-300 ease-out">
+                          <img
+                            src={producto.imagen}
+                            alt={producto.nombre}
+                            className="w-full h-full object-cover"
+                          />
+                          
+                          {/* Badge de marca - estilo Figma */}
+                          <div className="absolute bottom-3 left-3 bg-white rounded-lg 
+                                          flex items-center gap-2 px-3 py-1.5 shadow-lg">
+                            <div 
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                              style={{ backgroundColor: producto.marca.color }}
+                            >
+                              {producto.marca.icono}
+                            </div>
+                            <span className="text-black text-sm font-medium">
+                              {producto.marca.nombre}
+                            </span>
+                          </div>
+
+                          {/* Botones superiores - estilo Figma */}
+                          <div className="absolute top-3 right-3 flex gap-2">
+                            {/* Botón compartir */}
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleProductShare(producto, 'suggestions')
+                              }}
+                              className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full 
+                                         flex items-center justify-center hover:bg-white hover:scale-110 
+                                         transition-all duration-200 shadow-lg">
+                              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                              </svg>
+                            </button>
+
+                            {/* Botón favorito */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleFavoriteToggle(producto.id, !favoriteProducts.has(producto.id), producto, 'suggestions')
+                              }}
+                              className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full 
+                                         flex items-center justify-center hover:bg-white hover:scale-110 
+                                         transition-all duration-200 shadow-lg"
+                            >
+                              <svg className={`w-4 h-4 transition-all duration-200 ${
+                                favoriteProducts.has(producto.id) 
+                                  ? 'fill-red-500 text-red-500' 
+                                  : 'text-gray-600 hover:text-red-400'
+                              }`} fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Información del producto - fuera de la imagen */}
+                        <div className="px-1">
+                          <h3 className="text-white font-medium text-sm leading-tight mb-2 line-clamp-2
+                                         group-hover:text-gray-100 transition-colors duration-200">
+                            {producto.nombre}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-bold text-base
+                                             group-hover:text-gray-100 transition-colors duration-200">
+                              {producto.precioActual}
+                            </span>
+                            {producto.precioAnterior && (
+                              <span className="text-gray-400 line-through text-sm
+                                               group-hover:text-gray-300 transition-colors duration-200">
+                                {producto.precioAnterior}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <ProductsEmptyState />
+            )}
           </section>
 
         </div>
