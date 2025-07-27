@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '../../components/Header';
 import BackgroundPattern from '../../components/BackgroundPattern';
+import BottomTabBar from '../../components/BottomTabBar';
 import CampaignDetailModal from './components/CampaignDetailModal';
 
 const { width } = Dimensions.get('window');
@@ -161,6 +162,8 @@ const CampaignsScreen: React.FC = () => {
         campaign={selectedCampaign}
         onClose={handleCloseModal}
       />
+      
+      <BottomTabBar />
     </SafeAreaView>
   );
 };

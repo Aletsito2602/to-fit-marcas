@@ -3,7 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { ProductsStackParamList } from '../types';
 
 // Importar las pantallas de productos
-import ProductsListScreen from '../screens/products/ProductsListScreen';
+import ProductsScreen from '../screens/main/ProductsScreen';
 import ProductDetailScreen from '../screens/products/ProductDetailScreen';
 import AddEditProductScreen from '../screens/products/AddEditProductScreen';
 import AddVariantsScreen from '../screens/products/AddVariantsScreen';
@@ -21,7 +21,7 @@ const ProductsNavigator: React.FC = () => {
     >
       <Stack.Screen 
         name="ProductsList" 
-        component={ProductsListScreen}
+        component={ProductsScreen}
         options={{ title: 'Productos' }}
       />
       <Stack.Screen 

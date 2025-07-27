@@ -18,6 +18,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Product, ProductsStackParamList } from '../../types';
 import BackgroundPattern from '../../components/BackgroundPattern';
 import Header from '../../components/Header';
+// BottomTabBar removed - accessed from sidebar drawer
 import ProductItem from '../../components/products/ProductItem';
 import { useProducts, FirebaseProduct } from '../../hooks/useProducts';
 import { useAuth } from '../../contexts/AuthContext';
@@ -425,6 +426,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'space-between',
+    marginRight: 16,
   },
   stockBadge: {
     flexDirection: 'row',

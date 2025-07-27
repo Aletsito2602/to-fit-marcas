@@ -181,60 +181,59 @@ const CamaraScreen: React.FC<CamaraScreenProps> = ({ navigation, route }) => {
         >
           {/* Overlay con controles superiores */}
           <View style={styles.overlay}>
-            <View style={styles.topControls}>
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={toggleFlash}
-                disabled={isTakingPhoto}
-              >
-                <Ionicons 
-                  name={getFlashIcon() as any} 
-                  size={24} 
-                  color={getFlashColor()} 
-                />
-                <Text style={styles.controlLabel}>Flash</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={toggleCamera}
-                disabled={isTakingPhoto}
-              >
-                <Ionicons name="camera-reverse" size={24} color="#FFFFFF" />
-                <Text style={styles.controlLabel}>Girar</Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Controles inferiores */}
             <View style={styles.bottomControls}>
+              {/* Galería a la izquierda */}
               <TouchableOpacity
                 style={styles.galleryButton}
                 onPress={handleOpenGallery}
                 disabled={isTakingPhoto}
               >
                 <Ionicons name="images" size={30} color="#FFFFFF" />
-                <Text style={styles.galleryLabel}>Galería</Text>
               </TouchableOpacity>
 
-              {/* Botón de captura principal */}
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={handleTakePhoto}
-                disabled={isTakingPhoto}
-              >
-                <Animated.View
-                  style={[
-                    styles.captureButtonInner,
-                    isTakingPhoto && styles.captureButtonLoading
-                  ]}
+              {/* Controles centrales: flash, captura y cámara en línea */}
+              <View style={styles.captureSection}>
+                <TouchableOpacity
+                  style={styles.sideControlButton}
+                  onPress={toggleFlash}
+                  disabled={isTakingPhoto}
                 >
-                  {isTakingPhoto && (
-                    <View style={styles.loadingIndicator} />
-                  )}
-                </Animated.View>
-              </TouchableOpacity>
+                  <Ionicons 
+                    name={getFlashIcon() as any} 
+                    size={24} 
+                    color={getFlashColor()} 
+                  />
+                </TouchableOpacity>
 
-              {/* Espacio para balance */}
+                {/* Botón de captura principal */}
+                <TouchableOpacity
+                  style={styles.captureButton}
+                  onPress={handleTakePhoto}
+                  disabled={isTakingPhoto}
+                >
+                  <Animated.View
+                    style={[
+                      styles.captureButtonInner,
+                      isTakingPhoto && styles.captureButtonLoading
+                    ]}
+                  >
+                    {isTakingPhoto && (
+                      <View style={styles.loadingIndicator} />
+                    )}
+                  </Animated.View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.sideControlButton}
+                  onPress={toggleCamera}
+                  disabled={isTakingPhoto}
+                >
+                  <Ionicons name="camera-reverse" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Espacio vacío a la derecha para balance */}
               <View style={styles.spacer} />
             </View>
 
@@ -309,24 +308,17 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'space-between',
   },
-  topControls: {
+  captureSection: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 60, // Espacio para header
-    paddingHorizontal: 20,
-  },
-  controlButton: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 25,
-    padding: 12,
-    minWidth: 70,
+    justifyContent: 'center',
+    gap: 30, // Espacio entre flash, captura y girar cámara
   },
-  controlLabel: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontFamily: 'Poppins-Regular',
-    marginTop: 4,
+  sideControlButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    // Sin backgroundColor - fondo transparente
   },
   bottomControls: {
     flexDirection: 'row',
@@ -337,15 +329,9 @@ const styles = StyleSheet.create({
   },
   galleryButton: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 25,
+    justifyContent: 'center',
     padding: 15,
-  },
-  galleryLabel: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontFamily: 'Poppins-Regular',
-    marginTop: 4,
+    // Sin backgroundColor - fondo transparente
   },
   captureButton: {
     width: 80,
@@ -386,7 +372,7 @@ const styles = StyleSheet.create({
     borderTopColor: 'transparent',
   },
   spacer: {
-    width: 60,
+    width: 60, // Mismo ancho que el botón de galería para balance
   },
   frameGuides: {
     ...StyleSheet.absoluteFillObject,

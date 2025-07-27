@@ -19,6 +19,7 @@ import {
 } from './components';
 import Header from '../../components/Header';
 import BackgroundPattern from '../../components/BackgroundPattern';
+import BottomTabBar from '../../components/BottomTabBar';
 
 interface MiTiendaScreenProps {
   navigation: any;
@@ -103,6 +104,7 @@ const MiTiendaScreen: React.FC<MiTiendaScreenProps> = ({ navigation }) => {
             console.log('Categoria seleccionada:', categoria.nombre);
             // navigation.navigate('ProductosPorCategoria', { categoria });
           }}
+          editable={false}
         />
 
         {/* Grid Productos Destacados */}
@@ -181,6 +183,8 @@ const MiTiendaScreen: React.FC<MiTiendaScreenProps> = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
+      
+      <BottomTabBar />
     </SafeAreaView>
   );
 };

@@ -29,6 +29,7 @@ interface Order {
   statusColor: string;
   orderDate: string;
   deliveryAddress: string;
+  saleSource?: string; // Nuevo campo para origen de venta
   items: OrderItem[];
 }
 
@@ -100,6 +101,17 @@ const OrderBottomSheet = forwardRef<BottomSheet, OrderBottomSheetProps>(
                 <Text style={styles.orderDate}>Pedido: {order.orderDate}</Text>
               </View>
             </View>
+
+            {/* Sale Source */}
+            {order.saleSource && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Origen de venta</Text>
+                <View style={styles.saleSourceContainer}>
+                  <Ionicons name="storefront-outline" size={20} color="#A0A0A0" />
+                  <Text style={styles.saleSourceText}>{order.saleSource}</Text>
+                </View>
+              </View>
+            )}
 
             {/* Delivery Address */}
             <View style={styles.section}>
@@ -289,6 +301,20 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   addressText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#CCCCCC',
+    marginLeft: 12,
+    flex: 1,
+  },
+  saleSourceContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#2A2A2A',
+    borderRadius: 12,
+    padding: 16,
+  },
+  saleSourceText: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: '#CCCCCC',

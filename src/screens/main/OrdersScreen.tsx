@@ -36,6 +36,7 @@ const OrdersScreen: React.FC = () => {
       statusColor: '#F59E0B',
       orderDate: '2025-01-17',
       deliveryAddress: 'Calle Mayor 123, Madrid, España',
+      saleSource: 'Instagram',
       items: [
         {
           id: '1',
@@ -63,6 +64,7 @@ const OrdersScreen: React.FC = () => {
       statusColor: '#4ADE80',
       orderDate: '2025-01-16',
       deliveryAddress: 'Avenida de la Paz 456, Barcelona, España',
+      saleSource: 'Tienda Web',
       items: [
         {
           id: '3',
@@ -90,6 +92,7 @@ const OrdersScreen: React.FC = () => {
       statusColor: '#06B6D4',
       orderDate: '2025-01-15',
       deliveryAddress: 'Plaza España 789, Valencia, España',
+      saleSource: 'WhatsApp',
       items: [
         {
           id: '5',

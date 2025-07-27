@@ -20,6 +20,7 @@ import { useTiendaActual } from '../../hooks/useTiendaActual';
 import Header from '../../components/Header';
 import BackgroundPattern from '../../components/BackgroundPattern';
 import BottomTabBar from '../../components/BottomTabBar';
+import ModernCalendar from '../../components/metrics/ModernCalendar';
 
 interface Evento {
   id: string;
@@ -37,6 +38,40 @@ interface Evento {
 
 const CalendarioTab: React.FC = () => {
   const [proximosEventos, setProximosEventos] = useState<Evento[]>([]);
+  
+  // Eventos para el calendario moderno
+  const calendarEvents = [
+    {
+      id: '1',
+      date: '2025-01-28',
+      title: 'New Drop Classic',
+      type: 'launch' as const,
+    },
+    {
+      id: '2',
+      date: '2025-01-30',
+      title: '10K Adidas',
+      type: 'meeting' as const,
+    },
+    {
+      id: '3',
+      date: '2025-02-02',
+      title: 'Summer Collection',
+      type: 'deadline' as const,
+    },
+    {
+      id: '4',
+      date: '2025-02-05',
+      title: 'Adidas x Creators',
+      type: 'campaign' as const,
+    },
+    {
+      id: '5',
+      date: '2025-02-14',
+      title: 'Evento San Valentín',
+      type: 'launch' as const,
+    },
+  ];
 
   const eventosData: Evento[] = [
     {
@@ -174,6 +209,13 @@ const CalendarioTab: React.FC = () => {
 
   return (
     <View style={styles.calendarioContainer}>
+      {/* Calendario ModernCalendar */}
+      <ModernCalendar
+        events={calendarEvents}
+        onDatePress={(date) => console.log('Fecha seleccionada:', date)}
+        onEventPress={(event) => console.log('Evento seleccionado:', event)}
+      />
+      
       <View style={styles.seccionHeader}>
         <Text style={styles.seccionTitulo}>Próximos eventos</Text>
         <TouchableOpacity>

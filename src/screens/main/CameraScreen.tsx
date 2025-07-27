@@ -139,14 +139,6 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" translucent />
       
-      {/* Header with custom style for camera */}
-      <View style={styles.headerContainer}>
-        <Header 
-          showBack={true}
-          onBackPress={() => navigation.goBack()}
-          style={styles.headerCamera}
-        />
-      </View>
 
       <Animated.View 
         style={[
@@ -164,34 +156,11 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
           mode="picture"
           flash={flashMode}
         >
-          {/* Overlay con controles superiores */}
+          {/* Overlay con controles */}
           <View style={styles.overlay}>
-            <View style={styles.topControls}>
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={toggleFlash}
-                disabled={isTakingPhoto}
-              >
-                <Ionicons 
-                  name={getFlashIcon() as any} 
-                  size={24} 
-                  color={getFlashColor()} 
-                />
-                <Text style={styles.controlLabel}>Flash</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={toggleCamera}
-                disabled={isTakingPhoto}
-              >
-                <Ionicons name="camera-reverse" size={24} color="#FFFFFF" />
-                <Text style={styles.controlLabel}>Girar</Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Controles inferiores */}
             <View style={styles.bottomControls}>
+              {/* Galería a la izquierda */}
               <TouchableOpacity
                 style={styles.galleryButton}
                 onPress={handleOpenGallery}
@@ -219,8 +188,30 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
                 </Animated.View>
               </TouchableOpacity>
 
-              {/* Espacio para balance */}
-              <View style={styles.spacer} />
+              {/* Controles: Flash y Cambiar cámara */}
+              <View style={styles.rightControls}>
+                {/* Flash */}
+                <TouchableOpacity
+                  style={styles.controlButtonNoBg}
+                  onPress={toggleFlash}
+                  disabled={isTakingPhoto}
+                >
+                  <Ionicons 
+                    name={getFlashIcon()} 
+                    size={24} 
+                    color={getFlashColor()} 
+                  />
+                </TouchableOpacity>
+
+                {/* Cambiar cámara */}
+                <TouchableOpacity
+                  style={styles.controlButtonNoBg}
+                  onPress={toggleCamera}
+                  disabled={isTakingPhoto}
+                >
+                  <Ionicons name="camera-reverse" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Guías de encuadre */}
@@ -285,7 +276,6 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     flex: 1,
-    marginTop: 60, // Altura del header
   },
   camera: {
     flex: 1,
@@ -307,6 +297,18 @@ const styles = StyleSheet.create({
     padding: 12,
     minWidth: 70,
   },
+  controlButtonNoBg: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+  },
+  rightControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 15,
+    width: 80,
+  },
   controlLabel: {
     color: '#FFFFFF',
     fontSize: 12,
@@ -318,12 +320,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 40,
-    paddingBottom: 60,
+    paddingBottom: 40,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   galleryButton: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 25,
     padding: 15,
   },
   galleryLabel: {

@@ -76,7 +76,7 @@ const TabIcon: React.FC<TabIconProps> = ({ name, focused, size = 24 }) => {
           <Ionicons 
             name="camera-outline" 
             size={size} 
-            color={color} 
+            color={color}
           />
         );
 

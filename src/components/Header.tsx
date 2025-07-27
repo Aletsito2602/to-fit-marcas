@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Animated, StatusBar, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { useAuth } from '../contexts/AuthContext';
 import { useTiendaActual } from '../hooks/useTiendaActual';
+
+const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
 interface HeaderProps {
   showNotifications?: boolean;
@@ -52,7 +54,9 @@ const Header: React.FC<HeaderProps> = ({
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
       }
     ]}>
-      <View style={styles.leftContainer}>
+      <View style={styles.statusBarSpacer} />
+      <View style={styles.contentContainer}>
+        <View style={styles.leftContainer}>
         {showMenu && (
           <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress}>
             <Ionicons name="menu" size={24} color="#FFFFFF" />
@@ -86,6 +90,7 @@ const Header: React.FC<HeaderProps> = ({
             />
           </TouchableOpacity>
         )}
+        </View>
       </View>
     </Animated.View>
   );
@@ -94,16 +99,23 @@ const Header: React.FC<HeaderProps> = ({
 const styles = StyleSheet.create({
   header: {
     position: 'absolute',
-    top: 44,
+    top: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 60 + STATUS_BAR_HEIGHT,
     backgroundColor: '#000000',
+    zIndex: 1000,
+  },
+  statusBarSpacer: {
+    height: STATUS_BAR_HEIGHT,
+    backgroundColor: 'transparent',
+  },
+  contentContainer: {
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    zIndex: 1000,
   },
   leftContainer: {
     flex: 1,
@@ -122,6 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: 12,
+    paddingRight: 2,
   },
   iconButton: {
     padding: 4,

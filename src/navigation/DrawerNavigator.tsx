@@ -7,7 +7,6 @@ import DrawerMenu from '../components/DrawerMenu';
 import CampaignsScreen from '../screens/campaigns/CampaignsScreen';
 import AddCampaignScreen from '../screens/campaigns/AddCampaignScreen';
 import SelectProductsScreen from '../screens/campaigns/SelectProductsScreen';
-import MetricsDashboardScreen from '../screens/metrics/MetricsDashboardScreen';
 import StoreScreen from '../screens/store/StoreScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import CollectionsScreen from '../screens/collections/CollectionsScreen';
@@ -24,7 +23,6 @@ export type DrawerParamList = {
   Products: undefined;
   Inventory: undefined;
   Collections: undefined;
-  Metrics: undefined;
   Campaigns: undefined;
   AddCampaign: undefined;
   SelectProducts: undefined;
@@ -83,13 +81,6 @@ const DrawerNavigator: React.FC = () => {
         }}
       />
       
-      <Drawer.Screen 
-        name="Metrics" 
-        component={MetricsDashboardScreen}
-        options={{
-          drawerItemStyle: { display: 'none' }
-        }}
-      />
       
       <Drawer.Screen 
         name="Store" 

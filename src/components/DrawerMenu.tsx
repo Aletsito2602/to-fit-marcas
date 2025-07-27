@@ -30,6 +30,12 @@ const DrawerMenu: React.FC<DrawerMenuProps> = ({ navigation }) => {
 
   const menuItems: MenuItem[] = [
     {
+      id: 'home',
+      title: 'Home',
+      icon: 'home-outline',
+      screen: 'Home',
+    },
+    {
       id: 'campaigns',
       title: 'Campañas',
       icon: 'megaphone-outline',
@@ -40,16 +46,6 @@ const DrawerMenu: React.FC<DrawerMenuProps> = ({ navigation }) => {
       title: 'Estadísticas',
       icon: 'bar-chart-outline',
       screen: 'Metrics',
-    },
-    {
-      id: 'products',
-      title: 'Productos',
-      icon: 'cube-outline',
-      hasSubItems: true,
-      subItems: [
-        { id: 'inventory', title: 'Inventario', icon: '', screen: 'Inventory' },
-        { id: 'collections', title: 'Colecciones', icon: '', screen: 'Collections' },
-      ],
     },
     {
       id: 'documents',
