@@ -95,6 +95,7 @@ const MiTiendaScreen: React.FC<MiTiendaScreenProps> = ({ navigation }) => {
         <PerfilMarca 
           tienda={tienda}
           navigation={navigation}
+          onTiendaUpdate={onRefresh}
         />
 
         {/* Categorías Horizontales */}

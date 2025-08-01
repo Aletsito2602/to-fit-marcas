@@ -33,7 +33,7 @@ const DrawerMenu: React.FC<DrawerMenuProps> = ({ navigation }) => {
       id: 'home',
       title: 'Home',
       icon: 'home-outline',
-      screen: 'Home',
+      screen: 'MainTabs',
     },
     {
       id: 'campaigns',

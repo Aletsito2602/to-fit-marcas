@@ -8,6 +8,7 @@ export interface TiendaData {
   alias_marca: string;
   id_marca: string;
   logo: string;
+  portada?: string;
   nombre: string;
   seguidores: string[];
 }

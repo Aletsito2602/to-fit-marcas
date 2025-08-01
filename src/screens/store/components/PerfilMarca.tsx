@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,28 +7,90 @@ import {
   ImageBackground,
   StyleSheet,
   Modal,
-  Alert 
+  Alert,
+  ActivityIndicator 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, updateDoc } from 'firebase/firestore';
+import { storage, db } from '../../../config/firebase';
+import { useAuth } from '../../../contexts/AuthContext';
 import { TiendaData } from '../../../hooks/useTiendaActual';
 
 interface PerfilMarcaProps {
   tienda: TiendaData | null;
   navigation: any;
+  onTiendaUpdate?: () => void;
 }
 
-const PerfilMarca: React.FC<PerfilMarcaProps> = ({ tienda, navigation }) => {
-  const [bannerImage, setBannerImage] = useState(tienda?.logo || '');
+const PerfilMarca: React.FC<PerfilMarcaProps> = ({ tienda, navigation, onTiendaUpdate }) => {
+  const { user } = useAuth();
+  const [bannerImage, setBannerImage] = useState(tienda?.portada || tienda?.logo || '');
   const [logoImage, setLogoImage] = useState(tienda?.logo || '');
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [editMode, setEditMode] = useState(false);
+  const [uploading, setUploading] = useState(false);
   
+  // Update local state when tienda changes
+  useEffect(() => {
+    if (tienda) {
+      setBannerImage(tienda.portada || tienda.logo || '');
+      setLogoImage(tienda.logo || '');
+    }
+  }, [tienda]);
+
   if (!tienda) return null;
 
   const seguidoresCount = tienda.seguidores?.length || 0;
+
+  const uploadImageToFirebase = async (uri: string, type: 'banner' | 'logo') => {
+    try {
+      setUploading(true);
+      
+      // Create a unique filename
+      const filename = `${type}_${user?.uid}_${Date.now()}.jpg`;
+      const imageRef = ref(storage, `tiendas/${user?.uid}/${filename}`);
+      
+      // Convert URI to blob
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      
+      // Upload to Firebase Storage
+      await uploadBytes(imageRef, blob);
+      
+      // Get download URL
+      const downloadURL = await getDownloadURL(imageRef);
+      
+      // Update tienda document in Firestore
+      if (tienda?.id) {
+        const tiendaRef = doc(db, 'marcas', tienda.id);
+        const updateData = type === 'banner' ? { portada: downloadURL } : { logo: downloadURL };
+        await updateDoc(tiendaRef, updateData);
+        
+        // Update local state
+        if (type === 'banner') {
+          setBannerImage(downloadURL);
+        } else {
+          setLogoImage(downloadURL);
+        }
+        
+        Alert.alert('Éxito', `${type === 'banner' ? 'Banner' : 'Logo'} actualizado correctamente`);
+        
+        // Trigger refresh of tienda data
+        if (onTiendaUpdate) {
+          onTiendaUpdate();
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'No se pudo subir la imagen. Intenta nuevamente.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const pickImage = async (type: 'banner' | 'logo') => {
     if (!editMode) return;
@@ -41,19 +103,14 @@ const PerfilMarca: React.FC<PerfilMarcaProps> = ({ tienda, navigation }) => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       allowsEditing: true,
       aspect: type === 'banner' ? [16, 9] : [1, 1],
       quality: 0.8,
     });
 
     if (!result.canceled && result.assets[0]) {
-      const imageUri = result.assets[0].uri;
-      if (type === 'banner') {
-        setBannerImage(imageUri);
-      } else {
-        setLogoImage(imageUri);
-      }
+      await uploadImageToFirebase(result.assets[0].uri, type);
     }
   };
 
@@ -77,8 +134,16 @@ const PerfilMarca: React.FC<PerfilMarcaProps> = ({ tienda, navigation }) => {
         >
           {/* Icono de editar banner - solo visible en modo edición */}
           {editMode && (
-            <TouchableOpacity style={styles.editBannerButton} onPress={() => pickImage('banner')}>
-              <Ionicons name="camera" size={20} color="#FFFFFF" />
+            <TouchableOpacity 
+              style={styles.editBannerButton} 
+              onPress={() => pickImage('banner')}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons name="camera" size={20} color="#FFFFFF" />
+              )}
             </TouchableOpacity>
           )}
         {/* Overlay gradiente exacto del CSS */}
@@ -99,8 +164,16 @@ const PerfilMarca: React.FC<PerfilMarcaProps> = ({ tienda, navigation }) => {
             />
             {/* Icono de editar logo - solo visible en modo edición */}
             {editMode && (
-              <TouchableOpacity style={styles.editLogoButton} onPress={() => pickImage('logo')}>
-                <Ionicons name="camera" size={16} color="#FFFFFF" />
+              <TouchableOpacity 
+                style={styles.editLogoButton} 
+                onPress={() => pickImage('logo')}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Ionicons name="camera" size={16} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
             )}
           </TouchableOpacity>

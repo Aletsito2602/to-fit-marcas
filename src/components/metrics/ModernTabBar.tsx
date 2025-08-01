@@ -57,19 +57,6 @@ const ModernTabBar: React.FC<ModernTabBarProps> = ({
           );
         })}
       </View>
-      
-      {/* Active indicator */}
-      <View style={styles.indicatorContainer}>
-        <View 
-          style={[
-            styles.activeIndicator,
-            {
-              left: tabs.findIndex(tab => tab.id === activeTab) * (tabWidth + 8) + 20,
-              width: tabWidth,
-            }
-          ]} 
-        />
-      </View>
     </View>
   );
 };
@@ -132,24 +119,6 @@ const styles = StyleSheet.create({
   },
   activeTabSubtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
-  },
-  indicatorContainer: {
-    position: 'absolute',
-    bottom: -2,
-    left: 0,
-    right: 0,
-    height: 2,
-  },
-  activeIndicator: {
-    position: 'absolute',
-    height: 3, // Incrementado grosor
-    backgroundColor: '#0FFF95',
-    borderRadius: 2, // Más redondeado
-    shadowColor: '#0FFF95',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
-    elevation: 2,
   },
 });
 

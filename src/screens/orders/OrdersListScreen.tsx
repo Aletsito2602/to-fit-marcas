@@ -61,6 +61,7 @@ const OrdersListScreen: React.FC = () => {
       total: 299.98,
       status: 'preparing',
       paymentStatus: 'paid',
+      origenVenta: 'instagram',
       createdAt: new Date('2025-01-01T09:12:00'),
       updatedAt: new Date(),
     },
@@ -86,6 +87,7 @@ const OrdersListScreen: React.FC = () => {
       total: 60.00,
       status: 'delivered',
       paymentStatus: 'paid',
+      origenVenta: 'tienda_online',
       createdAt: new Date('2025-01-02T14:30:00'),
       updatedAt: new Date(),
     },
@@ -111,12 +113,13 @@ const OrdersListScreen: React.FC = () => {
       total: 135.00,
       status: 'pending',
       paymentStatus: 'pending',
+      origenVenta: 'whatsapp',
       createdAt: new Date('2025-01-03T11:15:00'),
       updatedAt: new Date(),
     },
   ];
 
-  const filters = ['Todos', 'Reciente', 'En preparación'];
+  const filters = ['Todos', 'Reciente', 'En preparación', 'Entregado'];
 
   const filteredOrders = mockOrders.filter(order => {
     const matchesSearch = order.customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -125,7 +128,8 @@ const OrdersListScreen: React.FC = () => {
     
     const matchesFilter = activeFilter === 'Todos' || 
       (activeFilter === 'Reciente' && order.status === 'pending') ||
-      (activeFilter === 'En preparación' && order.status === 'preparing');
+      (activeFilter === 'En preparación' && order.status === 'preparing') ||
+      (activeFilter === 'Entregado' && order.status === 'delivered');
     
     return matchesSearch && matchesFilter;
   });

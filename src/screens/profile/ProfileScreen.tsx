@@ -11,9 +11,18 @@ import {
   FlatList,
   Modal,
   Animated,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useTiendaActual } from '../../hooks/useTiendaActual';
@@ -218,9 +227,14 @@ const CalendarioTab: React.FC = () => {
       
       <View style={styles.seccionHeader}>
         <Text style={styles.seccionTitulo}>Próximos eventos</Text>
-        <TouchableOpacity>
-          <Text style={styles.verTodos}>Ver todos</Text>
-        </TouchableOpacity>
+        <View style={styles.seccionActions}>
+          <TouchableOpacity onPress={() => setCreateEventModalOpen(true)} style={styles.addButton}>
+            <Ionicons name="add" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Text style={styles.verTodos}>Ver todos</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {proximosEventos.length > 0 ? (
@@ -347,6 +361,18 @@ const ProfileScreen: React.FC = () => {
   const [capsulaModalOpen, setCapsulaModalOpen] = useState(false);
   const [selectedCapsulaImage, setSelectedCapsulaImage] = useState<string | null>(null);
   const [capsulaImageModalOpen, setCapsulaImageModalOpen] = useState(false);
+  const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    titulo: '',
+    descripcion: '',
+    fecha: new Date(),
+    imagenFondo: '',
+    logoMarca: '',
+    ubicacion: '',
+    tipo: 'lanzamiento' as 'lanzamiento' | 'colaboracion' | 'evento' | 'competencia'
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [uploadingEventImage, setUploadingEventImage] = useState(false);
   const translateY = new Animated.Value(0);
   const translateYCapsula = new Animated.Value(0);
   const [isLiked, setIsLiked] = useState(false);
@@ -488,6 +514,68 @@ const ProfileScreen: React.FC = () => {
 
   const handleCapsulaMorePress = () => {
     console.log('Abrir más opciones capsula');
+  };
+
+  // Event creation functions
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setEventForm({...eventForm, fecha: selectedDate});
+    }
+  };
+
+  const pickEventImage = async (type: 'portada' | 'logo') => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (permissionResult.granted === false) {
+      Alert.alert('Error', 'Se necesitan permisos para acceder a la galería');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaType.Images,
+      allowsEditing: true,
+      aspect: type === 'portada' ? [16, 9] : [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setUploadingEventImage(true);
+      try {
+        // Upload to Firebase Storage
+        const filename = `eventos/${type}_${user?.uid}_${Date.now()}.jpg`;
+        const imageRef = ref(storage, filename);
+        
+        const response = await fetch(result.assets[0].uri);
+        const blob = await response.blob();
+        
+        await uploadBytes(imageRef, blob);
+        const downloadURL = await getDownloadURL(imageRef);
+        
+        if (type === 'portada') {
+          setEventForm({...eventForm, imagenFondo: downloadURL});
+        } else {
+          setEventForm({...eventForm, logoMarca: downloadURL});
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        Alert.alert('Error', 'No se pudo subir la imagen');
+      } finally {
+        setUploadingEventImage(false);
+      }
+    }
+  };
+
+  const resetEventForm = () => {
+    setEventForm({
+      titulo: '',
+      descripcion: '',
+      fecha: new Date(),
+      imagenFondo: '',
+      logoMarca: '',
+      ubicacion: '',
+      tipo: 'lanzamiento'
+    });
   };
 
   const onCapsulaGestureEvent = Animated.event(
@@ -953,6 +1041,192 @@ const ProfileScreen: React.FC = () => {
             </PanGestureHandler>
           )}
         </View>
+      </Modal>
+
+      {/* Create Event Modal */}
+      <Modal
+        visible={createEventModalOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setCreateEventModalOpen(false)}
+      >
+        <KeyboardAvoidingView 
+          style={styles.createEventModalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={styles.createEventOverlay}>
+            <View style={styles.createEventContent}>
+              {/* Header */}
+              <View style={styles.createEventHeader}>
+                <TouchableOpacity onPress={() => {
+                  resetEventForm();
+                  setCreateEventModalOpen(false);
+                }}>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.createEventTitle}>Crear Evento</Text>
+                <TouchableOpacity 
+                  onPress={() => {
+                    // Handle save event
+                    console.log('Crear evento:', eventForm);
+                    Alert.alert(
+                      'Evento Creado',
+                      `Evento "${eventForm.titulo}" creado exitosamente`,
+                      [{ text: 'OK', onPress: () => {
+                        resetEventForm();
+                        setCreateEventModalOpen(false);
+                      }}]
+                    );
+                  }}
+                  style={styles.saveButton}
+                >
+                  <Text style={styles.saveButtonText}>Crear</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.createEventForm} showsVerticalScrollIndicator={false}>
+                {/* Título */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Título del evento</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="Ej: Summer Collection 2025"
+                    placeholderTextColor="#666666"
+                    value={eventForm.titulo}
+                    onChangeText={(text) => setEventForm({...eventForm, titulo: text})}
+                  />
+                </View>
+
+                {/* Descripción */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Descripción</Text>
+                  <TextInput
+                    style={[styles.formInput, styles.textArea]}
+                    placeholder="Describe tu evento de moda..."
+                    placeholderTextColor="#666666"
+                    value={eventForm.descripcion}
+                    onChangeText={(text) => setEventForm({...eventForm, descripcion: text})}
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
+
+                {/* Tipo de evento */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Tipo de evento</Text>
+                  <View style={styles.tipoEventoContainer}>
+                    {['lanzamiento', 'colaboracion', 'evento', 'competencia'].map((tipo) => (
+                      <TouchableOpacity
+                        key={tipo}
+                        style={[
+                          styles.tipoEventoButton,
+                          eventForm.tipo === tipo && styles.tipoEventoButtonActive
+                        ]}
+                        onPress={() => setEventForm({...eventForm, tipo: tipo as any})}
+                      >
+                        <Text style={[
+                          styles.tipoEventoText,
+                          eventForm.tipo === tipo && styles.tipoEventoTextActive
+                        ]}>
+                          {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Fecha del evento */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Fecha del evento</Text>
+                  <TouchableOpacity 
+                    style={styles.datePickerButton}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Text style={styles.datePickerText}>
+                      {eventForm.fecha.toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </Text>
+                    <Ionicons name="calendar-outline" size={20} color="#A0A0A0" />
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={eventForm.fecha}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleDateChange}
+                      minimumDate={new Date()}
+                    />
+                  )}
+                </View>
+
+                {/* Ubicación */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Ubicación</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="Ej: Palermo, Buenos Aires"
+                    placeholderTextColor="#666666"
+                    value={eventForm.ubicacion}
+                    onChangeText={(text) => setEventForm({...eventForm, ubicacion: text})}
+                  />
+                </View>
+
+                {/* Imagen de portada */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Imagen de portada</Text>
+                  <TouchableOpacity 
+                    style={styles.imageUploadButton}
+                    onPress={() => pickEventImage('portada')}
+                    disabled={uploadingEventImage}
+                  >
+                    {eventForm.imagenFondo ? (
+                      <Image source={{ uri: eventForm.imagenFondo }} style={styles.uploadedEventImage} />
+                    ) : uploadingEventImage ? (
+                      <>
+                        <ActivityIndicator size="small" color="#A0A0A0" />
+                        <Text style={styles.imageUploadText}>Subiendo...</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Ionicons name="camera-outline" size={24} color="#A0A0A0" />
+                        <Text style={styles.imageUploadText}>Subir imagen</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* Logo de marca */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Logo de marca</Text>
+                  <TouchableOpacity 
+                    style={styles.imageUploadButton}
+                    onPress={() => pickEventImage('logo')}
+                    disabled={uploadingEventImage}
+                  >
+                    {eventForm.logoMarca ? (
+                      <Image source={{ uri: eventForm.logoMarca }} style={styles.uploadedEventLogo} />
+                    ) : uploadingEventImage ? (
+                      <>
+                        <ActivityIndicator size="small" color="#A0A0A0" />
+                        <Text style={styles.imageUploadText}>Subiendo...</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Ionicons name="image-outline" size={24} color="#A0A0A0" />
+                        <Text style={styles.imageUploadText}>Subir logo</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.bottomSpacing} />
+              </ScrollView>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
       
       <BottomTabBar />
@@ -1657,6 +1931,162 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 8,
     fontFamily: 'Poppins-Regular',
+  },
+
+  // Add Event Modal Styles
+  createEventModalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  createEventOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  createEventContent: {
+    backgroundColor: '#1C1C1C',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: '90%',
+    paddingTop: 20,
+  },
+  createEventHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  createEventTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 20,
+  },
+  saveButton: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    color: '#000000',
+    fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  createEventForm: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  formInput: {
+    backgroundColor: '#333333',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  tipoEventoContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  tipoEventoButton: {
+    backgroundColor: '#333333',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  tipoEventoButtonActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
+  },
+  tipoEventoText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#A0A0A0',
+  },
+  tipoEventoTextActive: {
+    color: '#000000',
+  },
+  imageUploadButton: {
+    backgroundColor: '#333333',
+    borderRadius: 8,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  imageUploadText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#A0A0A0',
+  },
+  seccionActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  addButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  datePickerButton: {
+    backgroundColor: '#333333',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  datePickerText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    color: '#FFFFFF',
+  },
+  uploadedEventImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+  },
+  uploadedEventLogo: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
   },
 });
 

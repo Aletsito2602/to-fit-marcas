@@ -245,7 +245,7 @@ const InventoryScreen: React.FC = () => {
             data={filteredProducts}
             renderItem={renderInventoryItem}
             keyExtractor={(item) => item.id}
-            style={styles.productsList}
+            style={[styles.productsList, { flex: 0 }]}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
               <ScrollView
@@ -259,7 +259,6 @@ const InventoryScreen: React.FC = () => {
             }
             ListHeaderComponentStyle={styles.listHeader}
             scrollEnabled={false}
-            style={[styles.productsList, { flex: 0 }]}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="cube-outline" size={48} color="#666666" />

@@ -65,6 +65,7 @@ export interface Order {
   total: number;
   status: 'pending' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'paid' | 'failed';
+  origenVenta?: 'tienda_online' | 'instagram' | 'whatsapp' | 'marketplace' | 'fisico';
   createdAt: Date;
   updatedAt: Date;
 }

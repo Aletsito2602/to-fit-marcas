@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,21 +18,15 @@ import Header from '../../components/Header';
 import BackgroundPattern from '../../components/BackgroundPattern';
 import BottomTabBar from '../../components/BottomTabBar';
 import CampaignDetailModal from './components/CampaignDetailModal';
+import { useCampaigns } from '../../hooks/useCampaigns';
+import { FirebaseCampaign } from '../../services/campaignsService';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
-interface Campaign {
-  id: number;
-  marca: string;
-  comision: string;
-  imagen: string;
-  descripcion?: string;
-}
-
 interface CampaignCardProps {
-  campaign: Campaign;
-  onViewDetails: (campaign: Campaign) => void;
+  campaign: FirebaseCampaign;
+  onViewDetails: (campaign: FirebaseCampaign) => void;
 }
 
 const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onViewDetails }) => {
@@ -55,55 +50,23 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onViewDetails }) 
 
 const CampaignsScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { campaigns, loading, error } = useCampaigns();
   const [searchText, setSearchText] = useState('');
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<FirebaseCampaign | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Datos de ejemplo
-  const campaignsData: Campaign[] = [
-    {
-      id: 1,
-      marca: "Complor",
-      comision: "$18 USD/10%",
-      imagen: "https://via.placeholder.com/150x100/333/fff?text=Complor"
-    },
-    {
-      id: 2,
-      marca: "Calvin Klein",
-      comision: "$12.6 USD/12%",
-      imagen: "https://via.placeholder.com/150x100/333/fff?text=CK"
-    },
-    {
-      id: 3,
-      marca: "Xlavida",
-      comision: "$9.9 USD/10%",
-      imagen: "https://via.placeholder.com/150x100/333/fff?text=Xlavida"
-    },
-    {
-      id: 4,
-      marca: "Vanidad",
-      comision: "$10 USD/5%",
-      imagen: "https://via.placeholder.com/150x100/333/fff?text=Vanidad"
-    },
-    {
-      id: 5,
-      marca: "Sport Elite",
-      comision: "$15 USD/8%",
-      imagen: "https://via.placeholder.com/150x100/333/fff?text=Sport"
-    },
-    {
-      id: 6,
-      marca: "Fashion Pro",
-      comision: "$20 USD/15%",
-      imagen: "https://via.placeholder.com/150x100/333/fff?text=Fashion"
-    }
-  ];
+  // Filter campaigns based on search text
+  const filteredCampaigns = campaigns.filter(campaign => 
+    campaign.marca.toLowerCase().includes(searchText.toLowerCase()) ||
+    campaign.descripcion?.toLowerCase().includes(searchText.toLowerCase()) ||
+    campaign.nombreCampañante.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const handleAddCampaign = () => {
     navigation.navigate('AddCampaign' as never);
   };
 
-  const handleViewDetails = (campaign: Campaign) => {
+  const handleViewDetails = (campaign: FirebaseCampaign) => {
     setSelectedCampaign(campaign);
     setShowModal(true);
   };
@@ -140,20 +103,37 @@ const CampaignsScreen: React.FC = () => {
           />
         </View>
 
-        {/* Grid de campañas */}
-        <FlatList
-          data={campaignsData}
-          numColumns={2}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <CampaignCard 
-              campaign={item} 
-              onViewDetails={handleViewDetails}
-            />
-          )}
-          contentContainerStyle={styles.grid}
-          showsVerticalScrollIndicator={false}
-        />
+        {/* Loading, Error, or Grid de campañas */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.loadingText}>Cargando campañas...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredCampaigns}
+            numColumns={2}
+            keyExtractor={(item) => item.id || Math.random().toString()}
+            renderItem={({ item }) => (
+              <CampaignCard 
+                campaign={item} 
+                onViewDetails={handleViewDetails}
+              />
+            )}
+            contentContainerStyle={styles.grid}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={() => (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No hay campañas disponibles</Text>
+                <Text style={styles.emptySubtext}>Crea tu primera campaña para comenzar</Text>
+              </View>
+            )}
+          />
+        )}
       </View>
 
       {/* Modal de detalles */}
@@ -264,6 +244,52 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '500',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    marginTop: 16,
+    fontFamily: 'Poppins-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 8,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  emptySubtext: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontFamily: 'Poppins-Regular',
   },
 });
 

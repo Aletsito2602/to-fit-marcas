@@ -43,6 +43,40 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onPress }) => {
     }
   };
 
+  const getOrigenVentaText = (origen?: string) => {
+    switch (origen) {
+      case 'tienda_online':
+        return 'Tienda Online';
+      case 'instagram':
+        return 'Instagram';
+      case 'whatsapp':
+        return 'WhatsApp';
+      case 'marketplace':
+        return 'Marketplace';
+      case 'fisico':
+        return 'Tienda Física';
+      default:
+        return 'No especificado';
+    }
+  };
+
+  const getOrigenVentaIcon = (origen?: string) => {
+    switch (origen) {
+      case 'tienda_online':
+        return 'storefront-outline';
+      case 'instagram':
+        return 'logo-instagram';
+      case 'whatsapp':
+        return 'logo-whatsapp';
+      case 'marketplace':
+        return 'business-outline';
+      case 'fisico':
+        return 'location-outline';
+      default:
+        return 'help-outline';
+    }
+  };
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -55,6 +89,14 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onPress }) => {
       <View style={styles.orderInfo}>
         <Text style={styles.customerName}>{order.customer.name}</Text>
         <Text style={styles.customerEmail}>{order.customer.email}</Text>
+        <View style={styles.origenContainer}>
+          <Ionicons 
+            name={getOrigenVentaIcon(order.origenVenta) as any} 
+            size={12} 
+            color="#A0A0A0" 
+          />
+          <Text style={styles.origenText}>{getOrigenVentaText(order.origenVenta)}</Text>
+        </View>
       </View>
       <View style={styles.statusContainer}>
         <View
@@ -77,6 +119,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 18,
     paddingHorizontal: 25,
+    paddingBottom: 24,
     borderBottomWidth: 1,
     borderBottomColor: '#404040',
   },
@@ -98,6 +141,17 @@ const styles = StyleSheet.create({
   customerEmail: {
     fontFamily: 'Poppins-Regular',
     fontSize: 14,
+    color: '#A0A0A0',
+  },
+  origenContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
+  origenText: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
     color: '#A0A0A0',
   },
   statusContainer: {
