@@ -20,6 +20,9 @@ import MenuView from './pages/MenuView'
 import Purchases from './pages/Purchases'
 import Favorites from './pages/Favorites'
 import SearchPage from './pages/Search'
+import Afiliados from './pages/Afiliados'
+import AfiliadosFAQs from './pages/AfiliadosFAQs'
+import AuthCallback from './pages/AuthCallback'
 
 // Páginas de configuración del perfil
 import EditarPerfil from './pages/EditarPerfil'
@@ -40,6 +43,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           
           {/* Todas las rutas protegidas usan HomeLayout con SidebarHome */}
           <Route path="/" element={
@@ -61,6 +65,8 @@ function App() {
             <Route path="purchases" element={<Purchases />} />
             <Route path="favorites" element={<Favorites />} />
             <Route path="search" element={<SearchPage />} />
+            <Route path="affiliates" element={<Afiliados />} />
+            <Route path="affiliates/faqs" element={<AfiliadosFAQs />} />
             
             {/* Páginas de configuración del perfil */}
             <Route path="editar-perfil" element={<EditarPerfil />} />

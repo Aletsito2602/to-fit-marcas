@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
-import { useAuthStore } from '../store/authStore'
+import { useSupabaseAuthStore } from '../store/supabaseAuthStore'
 
 const AuthProvider = ({ children }) => {
-  const initAuthListener = useAuthStore(state => state.initAuthListener)
+  const initAuthListener = useSupabaseAuthStore(state => state.initAuthListener)
 
   useEffect(() => {
-    // Inicializar el listener de autenticación de Firebase
+    // Inicializar el listener de autenticación de Supabase
     const unsubscribe = initAuthListener()
     
     // Cleanup function

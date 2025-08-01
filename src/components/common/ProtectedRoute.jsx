@@ -1,8 +1,8 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuthStore } from '../../store/authStore'
+import { useSupabaseAuthStore } from '../../store/supabaseAuthStore'
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated } = useSupabaseAuthStore()
   const location = useLocation()
   
   if (!isAuthenticated) {

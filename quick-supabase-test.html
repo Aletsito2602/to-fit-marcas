@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Rápido Supabase</title>
+</head>
+<body>
+    <h1>Test Rápido de Conexión Supabase</h1>
+    <div id="results"></div>
+    
+    <script>
+        const log = (msg) => {
+            console.log(msg)
+            document.getElementById('results').innerHTML += '<p>' + msg + '</p>'
+        }
+        
+        async function testSupabaseNow() {
+            log('🧪 Iniciando test rápido...')
+            
+            const url = 'https://zfjowsanrhhwioqavpdf.supabase.co'
+            const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmam93c2Fucmhod2lvcWF2cGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4MTMyMjIsImV4cCI6MjA2OTM4OTIyMn0.IdfLAQk0tEtF0lkymC2XSNodf-kXi2oTPvu0jQf2M6U'
+            
+            // 1. Test HTTP básico
+            try {
+                log('📡 Probando conectividad...')
+                const response = await fetch(url + '/rest/v1/', {
+                    headers: { 'apikey': key }
+                })
+                log('✅ Status: ' + response.status)
+                
+                if (!response.ok) {
+                    log('❌ HTTP falló: ' + response.statusText)
+                    return false
+                }
+            } catch (e) {
+                log('❌ Error HTTP: ' + e.message)
+                return false
+            }
+            
+            // 2. Test tabla users
+            try {
+                log('📋 Probando tabla users...')
+                const response = await fetch(url + '/rest/v1/users?select=id&limit=1', {
+                    headers: { 
+                        'apikey': key,
+                        'Authorization': 'Bearer ' + key
+                    }
+                })
+                
+                if (response.ok) {
+                    const data = await response.json()
+                    log('✅ Tabla users accesible: ' + data.length + ' registros')
+                } else {
+                    log('❌ Tabla users error: ' + response.status)
+                    const text = await response.text()
+                    log('Error: ' + text)
+                    return false
+                }
+            } catch (e) {
+                log('❌ Error tabla: ' + e.message)
+                return false
+            }
+            
+            // 3. Test UPSERT con tu usuario
+            try {
+                log('🔄 Probando UPSERT...')
+                const userId = '700df027-2a78-4db4-8388-8057dae502a9'
+                const response = await fetch(url + '/rest/v1/users', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': key,
+                        'Authorization': 'Bearer ' + key,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates,return=representation'
+                    },
+                    body: JSON.stringify({
+                        id: userId,
+                        name: 'Test Usuario ' + new Date().getTime(),
+                        updated_at: new Date().toISOString()
+                    })
+                })
+                
+                if (response.ok) {
+                    const data = await response.json()
+                    log('✅ UPSERT exitoso!')
+                    log('Datos: ' + JSON.stringify(data, null, 2))
+                    return true
+                } else {
+                    log('❌ UPSERT falló: ' + response.status)
+                    const text = await response.text()
+                    log('Error: ' + text)
+                    return false
+                }
+            } catch (e) {
+                log('❌ Error UPSERT: ' + e.message)
+                return false
+            }
+        }
+        
+        // Auto-run
+        testSupabaseNow().then(success => {
+            if (success) {
+                log('🎉 ¡SUPABASE FUNCIONA!')
+                log('El problema está en el código de la app, no en Supabase.')
+            } else {
+                log('❌ SUPABASE TIENE PROBLEMAS')
+                log('Revisar configuración, RLS policies o permisos.')
+            }
+        })
+    </script>
+</body>
+</html>

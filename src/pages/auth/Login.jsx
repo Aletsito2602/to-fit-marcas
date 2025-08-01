@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import { useAuthStore } from '../../store/authStore'
+import { useSupabaseAuthStore } from '../../store/supabaseAuthStore'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ const Login = () => {
   
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, isLoading, error } = useAuthStore()
+  const { login, loginWithGoogle, loginWithFacebook, isLoading, error } = useSupabaseAuthStore()
   
   const from = location.state?.from?.pathname || '/home'
 
@@ -53,7 +53,7 @@ const Login = () => {
     
     if (!validateForm()) return
     
-    const result = await login(formData)
+    const result = await login(formData.email, formData.password)
     
     if (result.success) {
       navigate(from, { replace: true })
@@ -171,11 +171,11 @@ const Login = () => {
           <button
             type="button"
             onClick={async () => {
-              const { loginWithGoogle } = useAuthStore.getState()
               const result = await loginWithGoogle()
-              if (result.success) {
+              if (result.success && !result.redirecting) {
                 navigate(from, { replace: true })
               }
+              // Si result.redirecting es true, la navegación se hará en el callback
             }}
             disabled={isLoading}
             className="w-12 h-12 rounded-full bg-[#333333] hover:bg-[#444444] disabled:opacity-50 transition-colors duration-300 flex items-center justify-center"
@@ -187,17 +187,30 @@ const Login = () => {
           <button
             type="button"
             onClick={async () => {
-              const { loginWithFacebook } = useAuthStore.getState()
               const result = await loginWithFacebook()
-              if (result.success) {
+              if (result.success && !result.redirecting) {
                 navigate(from, { replace: true })
               }
+              // Si result.redirecting es true, la navegación se hará en el callback
             }}
             disabled={isLoading}
             className="w-12 h-12 rounded-full bg-[#333333] hover:bg-[#444444] disabled:opacity-50 transition-colors duration-300 flex items-center justify-center"
           >
             <span className="text-white font-medium text-lg">f</span>
           </button>
+        </div>
+
+        {/* Enlace a registro */}
+        <div className="text-center">
+          <p className="text-[#CCCCCC] text-sm">
+            ¿No tienes cuenta?{' '}
+            <Link 
+              to="/register"
+              className="text-white font-medium hover:underline transition-all duration-300"
+            >
+              Regístrate aquí
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Configuración Supabase</title>
+</head>
+<body>
+    <h1>Test de Configuración Supabase</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        // Simular las variables de entorno para testing
+        window.import = {
+            meta: {
+                env: {
+                    VITE_SUPABASE_URL: 'https://zfjowsanrhhwioqavpdf.supabase.co',
+                    VITE_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmam93c2Fucmhod2lvcWF2cGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4MTMyMjIsImV4cCI6MjA2OTM4OTIyMn0.IdfLAQk0tEtF0lkymC2XSNodf-kXi2oTPvu0jQf2M6U',
+                    VITE_SUPABASE_TIMEOUT: '5000',
+                    VITE_DEBUG_SUPABASE: 'true',
+                    VITE_ENABLE_OFFLINE_MODE: 'true'
+                }
+            }
+        }
+        
+        const results = document.getElementById('results')
+        
+        function log(message) {
+            console.log(message)
+            results.innerHTML += '<p>' + message + '</p>'
+        }
+        
+        async function testConfig() {
+            log('🧪 Probando configuración desde .env')
+            
+            // Test 1: Variables de entorno
+            const url = import.meta.env.VITE_SUPABASE_URL
+            const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+            const timeout = parseInt(import.meta.env.VITE_SUPABASE_TIMEOUT) || 10000
+            const debug = import.meta.env.VITE_DEBUG_SUPABASE === 'true'
+            
+            log('✅ URL: ' + (url ? 'Configurada' : 'No configurada'))
+            log('✅ Key: ' + (key ? 'Configurada (' + key.slice(0,20) + '...)' : 'No configurada'))
+            log('✅ Timeout: ' + timeout + 'ms')
+            log('✅ Debug: ' + debug)
+            
+            // Test 2: Conexión HTTP básica
+            log('🌐 Probando conexión HTTP básica...')
+            
+            try {
+                const response = await fetch(url + '/rest/v1/', {
+                    method: 'GET',
+                    headers: {
+                        'apikey': key,
+                        'Authorization': 'Bearer ' + key
+                    }
+                })
+                
+                if (response.ok) {
+                    log('✅ Conexión HTTP: OK (' + response.status + ')')
+                } else {
+                    log('❌ Conexión HTTP: FALLO (' + response.status + ' ' + response.statusText + ')')
+                }
+            } catch (error) {
+                log('❌ Error de conexión: ' + error.message)
+            }
+            
+            log('🏁 Test completado')
+        }
+        
+        // Ejecutar test
+        testConfig()
+    </script>
+</body>
+</html>

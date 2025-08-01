@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuthStore } from '../../store/authStore'
+import { useSupabaseAuthStore } from '../../store/supabaseAuthStore'
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [error, setError] = useState('')
-  const { resetPassword, isLoading } = useAuthStore()
+  const { resetPassword, isLoading } = useSupabaseAuthStore()
 
   const validateEmail = (email) => {
     return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)

@@ -3,20 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingCart, Menu, Search } from 'lucide-react'
 import MenuItem, { MenuItemWithToggle, MenuSection } from '../components/ui/MenuItem'
 import { menuStructure, defaultUserSettings } from '../data/menuData'
-import { useAuthStore } from '../store/authStore'
-import { updateUserProfile, getUserProfile } from '../services/userProfileService'
+import { useSupabaseAuthStore } from '../store/supabaseAuthStore'
 import UserAvatar from '../components/ui/UserAvatar'
 import toast from 'react-hot-toast'
 
 const MenuView = () => {
   const navigate = useNavigate()
-  const { user: currentUser, logout } = useAuthStore()
+  const { user: currentUser, logout, updateUser } = useSupabaseAuthStore()
   const [userSettings, setUserSettings] = useState(defaultUserSettings)
   const [userProfile, setUserProfile] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
 
-  // ✅ CARGAR DATOS REALES DEL USUARIO DESDE FIREBASE
+  // ✅ CARGAR DATOS REALES DEL USUARIO DESDE SUPABASE
   useEffect(() => {
     const loadUserData = async () => {
       if (!currentUser) {
@@ -26,28 +25,22 @@ const MenuView = () => {
 
       setLoading(true)
       try {
-        const userId = currentUser.id || currentUser.uid || currentUser.email
+        // En Supabase, el usuario ya viene con todos los datos necesarios
+        setUserProfile({
+          name: currentUser.name || 'Usuario ToFit',
+          handle: currentUser.username ? `@${currentUser.username}` : (currentUser.email ? `@${currentUser.email.split('@')[0]}` : '@usuario'),
+          avatar: currentUser.avatar,
+          email: currentUser.email,
+          isVerified: currentUser.emailVerified || false
+        })
         
-        // Cargar perfil del usuario
-        const profileResult = await getUserProfile(userId)
-        if (profileResult.success) {
-          setUserProfile(profileResult.data)
-          // Cargar configuraciones guardadas en Firebase
-          if (profileResult.data.settings) {
-            setUserSettings({ ...defaultUserSettings, ...profileResult.data.settings })
-          }
-        } else {
-          // Si no existe perfil, usar datos básicos del currentUser
-          setUserProfile({
-            name: currentUser.name || currentUser.displayName || 'Usuario ToFit',
-            handle: currentUser.email ? `@${currentUser.email.split('@')[0]}` : '@usuario',
-            avatar: currentUser.photoURL || currentUser.avatar,
-            email: currentUser.email
-          })
+        // Cargar configuraciones guardadas (si las hay en los settings del usuario)
+        if (currentUser.settings) {
+          setUserSettings({ ...defaultUserSettings, ...currentUser.settings })
         }
 
         // También intentar cargar desde localStorage como backup
-        const savedSettings = localStorage.getItem(`userSettings_${userId}`)
+        const savedSettings = localStorage.getItem(`userSettings_${currentUser.id}`)
         if (savedSettings) {
           const parsed = JSON.parse(savedSettings)
           setUserSettings(prev => ({ ...prev, ...parsed }))
@@ -63,21 +56,20 @@ const MenuView = () => {
     loadUserData()
   }, [currentUser, navigate])
 
-  // ✅ GUARDAR CONFIGURACIONES EN FIREBASE Y LOCALSTORAGE
+  // ✅ GUARDAR CONFIGURACIONES EN SUPABASE Y LOCALSTORAGE
   const saveUserSettings = async (newSettings) => {
     if (!currentUser) return
 
     setUserSettings(newSettings)
-    const userId = currentUser.id || currentUser.uid || currentUser.email
     
     try {
-      // Guardar en Firebase
-      await updateUserProfile(userId, {
+      // Guardar en Supabase
+      await updateUser({
         settings: newSettings
       })
       
       // Backup en localStorage
-      localStorage.setItem(`userSettings_${userId}`, JSON.stringify(newSettings))
+      localStorage.setItem(`userSettings_${currentUser.id}`, JSON.stringify(newSettings))
       
       toast.success('Configuración guardada')
     } catch (error) {
@@ -256,9 +248,9 @@ const MenuView = () => {
   }
 
   return (
-    <div className="w-full bg-black text-white min-h-screen overflow-y-auto">
-      {/* Header superior con navegación */}
-      <div className="bg-black border-b border-white/5">
+    <div className="w-full bg-black text-white min-h-screen flex flex-col">
+      {/* Header superior con navegación - Fijo */}
+      <div className="bg-black border-b border-white/5 flex-shrink-0 sticky top-0 z-10">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-6">
             <button 
@@ -293,60 +285,101 @@ const MenuView = () => {
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className="w-full px-5 py-6">
-        {/* Logo To FIT con tipografía cursiva elegante */}
-        <div className="mb-8">
-          <h1 className="text-white text-3xl font-bold italic tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>
-            To FIT
-          </h1>
-        </div>
+      {/* Contenido principal - Scrollable */}
+      <div 
+        className="flex-1 overflow-y-auto menu-scrollable"
+        style={{ 
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        <div className="w-full px-5 py-6">
 
-        {/* ✅ HEADER DEL USUARIO CON DATOS REALES */}
-        <div className="flex items-center space-x-4 mb-6">
+        {/* ✅ HEADER DEL USUARIO CON DATOS REALES MEJORADOS */}
+        <div className="flex items-center space-x-4 mb-8">
           <div className="relative">
             <UserAvatar 
               user={userProfile} 
               size="xl"
-              className="border border-white/10"
+              className="border-2 border-white/20 ring-2 ring-blue-500/30"
             />
+            {/* Indicador de estado online */}
+            <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-white text-lg font-semibold leading-tight">
-              {userProfile?.name || 'Usuario ToFit'}
+            <h2 className="text-white text-xl font-bold leading-tight truncate">
+              {userProfile?.name || currentUser?.name || currentUser?.displayName || 'Usuario ToFit'}
             </h2>
-            <p className="text-gray-400 text-sm mt-1">
-              {userProfile?.handle || '@usuario'}
+            <p className="text-gray-300 text-sm mt-1 truncate">
+              {userProfile?.handle || (currentUser?.email ? `@${currentUser.email.split('@')[0]}` : '@usuario')}
             </p>
-            {userProfile?.email && (
-              <p className="text-gray-500 text-xs mt-0.5">
-                {userProfile.email}
+            {(userProfile?.email || currentUser?.email) && (
+              <p className="text-gray-500 text-xs mt-1 truncate">
+                {userProfile?.email || currentUser?.email}
               </p>
+            )}
+            {/* Badge de verificación si el usuario está verificado */}
+            {currentUser?.emailVerified && (
+              <div className="flex items-center mt-2">
+                <div className="flex items-center space-x-1 bg-blue-600/20 px-2 py-1 rounded-full">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-blue-300 text-xs font-medium">Verificado</span>
+                </div>
+              </div>
             )}
           </div>
         </div>
 
-        {/* ✅ BARRA DE BÚSQUEDA FUNCIONAL */}
+        {/* ✅ BARRA DE BÚSQUEDA FUNCIONAL MEJORADA */}
         <div className="mb-10">
           <form onSubmit={handleSearchSubmit}>
-            <div className="relative">
+            <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
+                <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200" />
               </div>
               <input
                 type="text"
-                placeholder="Buscar productos, marcas, usuarios..."
+                placeholder="Buscar productos, marcas, servicios, usuarios..."
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="
-                  w-full h-11 pl-12 pr-4 
-                  bg-gray-800 border-0 rounded-lg
+                  w-full h-12 pl-12 pr-12
+                  bg-gray-800/60 border border-gray-700/50 rounded-xl
                   text-white placeholder-gray-400 text-base
-                  focus:outline-none focus:ring-2 focus:ring-white/20
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
+                  focus:bg-gray-800/80
+                  hover:bg-gray-800/70
                   transition-all duration-200
                 "
               />
+              {/* Botón de limpiar búsqueda */}
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors duration-200"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
+            {/* Sugerencias de búsqueda rápida */}
+            {!searchQuery && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {['Zara', 'H&M', 'Maquillaje', 'Estilistas', 'Tendencias'].map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => setSearchQuery(suggestion)}
+                    className="px-3 py-1.5 bg-gray-700/50 text-gray-300 text-sm rounded-full hover:bg-gray-600/50 hover:text-white transition-all duration-200"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </form>
         </div>
 
@@ -401,8 +434,9 @@ const MenuView = () => {
           </MenuSection>
         </div>
 
-        {/* Espacio adicional al final para scroll */}
-        <div className="h-20" />
+          {/* Espacio adicional al final para scroll */}
+          <div className="h-20" />
+        </div>
       </div>
     </div>
   )

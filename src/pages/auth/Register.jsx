@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import { useAuthStore } from '../../store/authStore'
+import { useSupabaseAuthStore } from '../../store/supabaseAuthStore'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +14,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
   
   const navigate = useNavigate()
-  const { register: registerUser, isLoading, error } = useAuthStore()
+  const { register: registerUser, isLoading, error } = useSupabaseAuthStore()
 
   const handleChange = (e) => {
     const { name, value } = e.target

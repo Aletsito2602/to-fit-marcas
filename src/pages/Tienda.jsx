@@ -252,7 +252,7 @@ const featuredStores = [
 ]
 
 // Mock data para productos - Sugerencias para ti
-const productos = [
+const productosMock = [
   {
     id: 1,
     nombre: "Vestido Textura Cut Out",
@@ -296,6 +296,51 @@ const productos = [
     imagen: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop&crop=center",
     precioActual: "$189.999", 
     precioAnterior: "$220.000",
+    isFavorito: false
+  },
+  {
+    id: 6,
+    nombre: "Chaqueta Denim Vintage",
+    marca: { nombre: "Levi's", icono: "L", color: "#003087" },
+    imagen: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$95.500",
+    precioAnterior: null,
+    isFavorito: false
+  },
+  {
+    id: 7,
+    nombre: "Falda Midi Plisada",
+    marca: { nombre: "Mango", icono: "M", color: "#FF6B35" },
+    imagen: "https://images.unsplash.com/photo-1583496661160-fb5886a13d06?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$59.900",
+    precioAnterior: "$75.000",
+    isFavorito: false
+  },
+  {
+    id: 8,
+    nombre: "Suéter Oversized",
+    marca: { nombre: "H&M", icono: "H", color: "#E50000" },
+    imagen: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$42.000",
+    precioAnterior: null,
+    isFavorito: false
+  },
+  {
+    id: 9,
+    nombre: "Jeans Skinny Fit",
+    marca: { nombre: "Tommy", icono: "T", color: "#ED1C24" },
+    imagen: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$129.900",
+    precioAnterior: "$149.900",
+    isFavorito: false
+  },
+  {
+    id: 10,
+    nombre: "Camisa Seda Natural",
+    marca: { nombre: "Massimo", icono: "M", color: "#000080" },
+    imagen: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=600&fit=crop&crop=center",
+    precioActual: "$199.000",
+    precioAnterior: null,
     isFavorito: false
   },
   {
@@ -393,9 +438,15 @@ const Tienda = () => {
   // PROCESSED DATA - Algoritmos dinámicos
   // ========================================
 
-  // Hero Collections dinámicas desde Firebase
-  const heroCollections = useMemo(() => {
-    if (!publicaciones?.length || !marcas?.length) return []
+  // Hero Collections dinámicas desde Firebase con fallback a mock
+  const processedHeroCollections = useMemo(() => {
+    if (!publicaciones?.length || !marcas?.length) {
+      // Usar datos mock como fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎭 Usando datos mock para Hero Collections')
+      }
+      return heroCollections
+    }
     const processed = processHeroCollections(publicaciones, marcas)
     
     // Track analytics solo si hay datos
@@ -404,17 +455,29 @@ const Tienda = () => {
     }
     
     return processed
-  }, [publicaciones, marcas, analytics])
+  }, [publicaciones?.length, marcas?.length])
 
-  // Brand Collections dinámicas
-  const brandCollections = useMemo(() => {
-    if (!marcas?.length) return []
+  // Brand Collections dinámicas con fallback a mock
+  const processedBrandCollections = useMemo(() => {
+    if (!marcas?.length) {
+      // Usar datos mock como fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎭 Usando datos mock para Brand Collections')
+      }
+      return brandCollections
+    }
     return processBrandCollections(marcas, tiendas, productos)
-  }, [marcas, tiendas, productos])
+  }, [marcas?.length, tiendas?.length, productos?.length])
 
-  // Categorías dinámicas con algoritmos personalizados
-  const dynamicCategories = useMemo(() => {
-    if (!categorias?.length || !productos?.length) return []
+  // Categorías dinámicas con algoritmos personalizados y fallback a mock
+  const processedCategories = useMemo(() => {
+    if (!categorias?.length || !productos?.length) {
+      // Usar datos mock como fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎭 Usando datos mock para Categories')
+      }
+      return categories
+    }
     return processCategories(
       categorias, 
       productos, 
@@ -423,23 +486,41 @@ const Tienda = () => {
       lookPosts, 
       [] // userInteractions - TODO: implementar tracking de interacciones
     )
-  }, [categorias, productos, currentUser, lookPosts])
+  }, [categorias?.length, productos?.length, currentUser?.id, lookPosts?.length])
 
-  // Influencer Looks procesados
-  const influencerLooks = useMemo(() => {
-    if (!influencers?.length || !lookPosts?.length) return []
+  // Influencer Looks procesados con fallback a mock
+  const processedInfluencerLooks = useMemo(() => {
+    if (!influencers?.length || !lookPosts?.length) {
+      // Usar datos mock como fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎭 Usando datos mock para Influencer Looks')
+      }
+      return influencerLooks
+    }
     return processInfluencerLooks(influencers, lookPosts, productos, marcas)
-  }, [influencers, lookPosts, productos, marcas])
+  }, [influencers?.length, lookPosts?.length, productos?.length, marcas?.length])
 
-  // Featured Stores desde promociones
-  const featuredStores = useMemo(() => {
-    if (!promotions?.length || !tiendas?.length || !marcas?.length) return []
+  // Featured Stores desde promociones con fallback a mock
+  const processedFeaturedStores = useMemo(() => {
+    if (!promotions?.length || !tiendas?.length || !marcas?.length) {
+      // Usar datos mock como fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎭 Usando datos mock para Featured Stores')
+      }
+      return featuredStores
+    }
     return processFeaturedStores(promotions, tiendas, marcas)
-  }, [promotions, tiendas, marcas])
+  }, [promotions?.length, tiendas?.length, marcas?.length])
 
-  // Sugerencias personalizadas
-  const personalizedSuggestions = useMemo(() => {
-    if (!productos?.length || !marcas?.length) return []
+  // Sugerencias personalizadas con fallback a mock
+  const processedPersonalizedSuggestions = useMemo(() => {
+    if (!productos?.length || !marcas?.length) {
+      // Usar datos mock como fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎭 Usando datos mock para Personalized Suggestions')
+      }
+      return productosMock // usar los productos mock definidos arriba
+    }
     
     const suggestions = processPersonalizedSuggestions(
       productos,
@@ -456,7 +537,7 @@ const Tienda = () => {
     }
     
     return suggestions
-  }, [productos, marcas, currentUser, userPedidos, viewedProducts, analytics])
+  }, [productos?.length, marcas?.length, currentUser?.id, userPedidos?.length, viewedProducts.length])
 
   // ========================================
   // EFFECTS Y INICIALIZACIÓN
@@ -473,15 +554,15 @@ const Tienda = () => {
   // Track section views cuando los datos cambian
   useEffect(() => {
     if (!isLoading) {
-      analytics.trackSectionView('hero_collections', heroCollections.length, performance.now() - loadStartTime)
-      analytics.trackSectionView('brand_collections', brandCollections.length, performance.now() - loadStartTime)
-      analytics.trackSectionView('categories', dynamicCategories.length, performance.now() - loadStartTime)
-      analytics.trackSectionView('influencer_looks', influencerLooks.length, performance.now() - loadStartTime)
-      analytics.trackSectionView('featured_stores', featuredStores.length, performance.now() - loadStartTime)
-      analytics.trackSectionView('personalized_suggestions', personalizedSuggestions.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('hero_collections', processedHeroCollections.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('brand_collections', processedBrandCollections.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('categories', processedCategories.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('influencer_looks', processedInfluencerLooks.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('featured_stores', processedFeaturedStores.length, performance.now() - loadStartTime)
+      analytics.trackSectionView('personalized_suggestions', processedPersonalizedSuggestions.length, performance.now() - loadStartTime)
     }
-  }, [isLoading, heroCollections.length, brandCollections.length, dynamicCategories.length, 
-      influencerLooks.length, featuredStores.length, personalizedSuggestions.length, analytics, loadStartTime])
+  }, [isLoading, processedHeroCollections.length, processedBrandCollections.length, processedCategories.length, 
+      processedInfluencerLooks.length, processedFeaturedStores.length, processedPersonalizedSuggestions.length, analytics, loadStartTime])
 
   // Auto-play del hero banner
   useEffect(() => {
@@ -562,13 +643,13 @@ const Tienda = () => {
 
   // Funciones para abrir historias por sección
   const openHeroStories = (index) => {
-    const collaboration = heroCollections[index]
+    const collaboration = processedHeroCollections[index]
     if (!collaboration) return
     
     // Track analytics
     analytics.trackHeroBannerClick(collaboration)
     
-    const stories = heroCollections.map(collection => ({
+    const stories = processedHeroCollections.map(collection => ({
       id: collection.id,
       title: collection.brand,
       subtitle: "Colección Exclusiva",
@@ -581,13 +662,13 @@ const Tienda = () => {
   }
 
   const openBrandStories = (index) => {
-    const marca = brandCollections[index]
+    const marca = processedBrandCollections[index]
     if (!marca) return
     
     // Track analytics
     analytics.trackBrandCollectionClick(marca)
     
-    const stories = brandCollections.map(brand => ({
+    const stories = processedBrandCollections.map(brand => ({
       id: brand.id,
       title: brand.brand,
       subtitle: brand.featured,
@@ -600,13 +681,13 @@ const Tienda = () => {
   }
 
   const openCategoryStories = (index) => {
-    const category = dynamicCategories[index]
+    const category = processedCategories[index]
     if (!category) return
     
     // Track analytics
     analytics.trackCategoryClick(category)
     
-    const stories = dynamicCategories.map(cat => ({
+    const stories = processedCategories.map(cat => ({
       id: cat.id,
       title: cat.name,
       subtitle: "Descubre nuestra selección",
@@ -619,18 +700,18 @@ const Tienda = () => {
   }
 
   const openInfluencerStories = (index) => {
-    const influencer = influencerLooks[index]
+    const influencer = processedInfluencerLooks[index]
     if (!influencer) return
     
     // Track analytics
     analytics.trackInfluencerLookClick(influencer, 0)
     
-    const stories = influencerLooks.map(inf => ({
+    const stories = processedInfluencerLooks.map(inf => ({
       id: inf.id,
       title: "Look Influencer",
-      subtitle: inf.handle,
-      price: inf.total_price,
-      image: inf.main_look_image,
+      subtitle: inf.influencer,
+      price: inf.price,
+      image: inf.image,
       action: "Comprar Look"
     }))
     setCurrentStories(stories)
@@ -639,13 +720,13 @@ const Tienda = () => {
   }
 
   const openStoreStories = (index) => {
-    const store = featuredStores[index]
+    const store = processedFeaturedStores[index]
     if (!store) return
     
     // Track analytics
     analytics.trackFeaturedStoreClick(store)
     
-    const stories = featuredStores.map(st => ({
+    const stories = processedFeaturedStores.map(st => ({
       id: st.id,
       title: st.name,
       subtitle: st.subtitle,
@@ -705,7 +786,7 @@ const Tienda = () => {
 
   const handleVerMas = () => {
     // Track analytics
-    analytics.trackSectionView('ver_mas_clicked', personalizedSuggestions.length, 0)
+    analytics.trackSectionView('ver_mas_clicked', processedPersonalizedSuggestions.length, 0)
     
     console.log('Ver más productos')
     // TODO: Implementar navegación a página de catálogo completo con filtros
@@ -736,11 +817,11 @@ const Tienda = () => {
           
           {/* Hero Banner con Carrusel - DINÁMICO */}
           <section className="w-full">
-            {heroCollections.length > 0 ? (
+            {processedHeroCollections.length > 0 ? (
               <>
                 <div className="overflow-hidden rounded-xl sm:rounded-2xl relative" ref={emblaRef}>
                   <div className="flex">
-                    {heroCollections.map((collection, index) => (
+                    {processedHeroCollections.map((collection, index) => (
                   <div key={collection.id} className="flex-[0_0_100%] min-w-0">
                     <div 
                       className="relative h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 2xl:h-96 
@@ -785,7 +866,7 @@ const Tienda = () => {
 
                 {/* Puntos de navegación - RESPONSIVE */}
                 <div className="flex justify-center mt-3 sm:mt-4 md:mt-5 lg:mt-6 space-x-2 sm:space-x-3">
-                  {heroCollections.map((_, index) => (
+                  {processedHeroCollections.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => scrollTo(index)}
@@ -803,7 +884,7 @@ const Tienda = () => {
 
           {/* Sección de Marcas/Colecciones - DINÁMICO */}
           <section className="w-full">
-            {brandCollections.length > 0 ? (
+            {processedBrandCollections.length > 0 ? (
               <div className="w-full">
                 <div 
                   ref={scrollRef}
@@ -818,7 +899,7 @@ const Tienda = () => {
                   style={{ scrollBehavior: 'smooth' }}
                 >
                   <div className="flex gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 pb-4 min-w-max px-1">
-                    {brandCollections.map((brand, index) => (
+                    {processedBrandCollections.map((brand, index) => (
                     <motion.div
                       key={brand.id}
                       className="flex-shrink-0 
@@ -904,7 +985,7 @@ const Tienda = () => {
 
           {/* Sección de Categorías - DINÁMICO */}
           <section className="w-screen -ml-1 sm:w-full sm:ml-0">
-            {dynamicCategories.length > 0 ? (
+            {processedCategories.length > 0 ? (
               <div className="w-full max-w-full px-3 sm:px-0">
                 {/* Grid responsivo optimizado para móvil */}
                 <div className="grid grid-cols-1 gap-3 
@@ -914,7 +995,7 @@ const Tienda = () => {
                                 lg:grid-cols-4 lg:gap-6 
                                 xl:grid-cols-5 xl:gap-6 
                                 w-full">
-                  {dynamicCategories.map((category, index) => (
+                  {processedCategories.map((category, index) => (
                   <motion.div
                     key={category.id}
                     className="w-full 
@@ -981,7 +1062,7 @@ const Tienda = () => {
 
           {/* Sección de Looks de Influencers - DINÁMICO */}
           <section className="w-screen -ml-1 sm:w-full sm:ml-0">
-            {influencerLooks.length > 0 ? (
+            {processedInfluencerLooks.length > 0 ? (
               <div className="w-full max-w-full px-3 sm:px-0">
                 {/* Título de la sección */}
                 <div className="mb-6 sm:mb-8">
@@ -999,7 +1080,7 @@ const Tienda = () => {
                 {/* Scroll horizontal de looks */}
                 <div className="w-full overflow-x-auto scrollbar-hide">
                   <div className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 pb-4 min-w-max">
-                    {influencerLooks.map((look, index) => (
+                    {processedInfluencerLooks.map((look, index) => (
                                          <motion.div
                        key={look.id}
                        className="flex-shrink-0 
@@ -1068,13 +1149,13 @@ const Tienda = () => {
 
               {/* Scroll horizontal de tiendas - Una sola fila */}
               <div className="w-full overflow-x-auto scrollbar-hide">
-                {featuredStores.length === 0 ? (
+                {processedFeaturedStores.length === 0 ? (
                   <FeaturedStoresSkeleton />
                 ) : (
                   <div className="flex gap-4 sm:gap-5 md:gap-6 lg:gap-8 pb-4 min-w-max">
                   
                   {/* Card principal - Nueva Colección */}
-                  {featuredStores.length > 0 && (
+                  {processedFeaturedStores.length > 0 && (
                     <motion.div
                       className="flex-shrink-0
                                  w-64 h-48 sm:w-72 sm:h-52 md:w-80 md:h-56 lg:w-96 lg:h-64 xl:w-[420px] xl:h-72
@@ -1088,7 +1169,7 @@ const Tienda = () => {
                     >
                       <div 
                         className="w-full h-full bg-cover bg-center transform group-hover:scale-105 transition-transform duration-500"
-                        style={{ backgroundImage: `url(${featuredStores[0].image})` }}
+                        style={{ backgroundImage: `url(${processedFeaturedStores[0].image})` }}
                       />
                       
                       {/* Overlay */}
@@ -1103,13 +1184,13 @@ const Tienda = () => {
                                          text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl
                                          mb-3 sm:mb-4 drop-shadow-lg
                                          group-hover:scale-105 transition-transform duration-300">
-                            {featuredStores[0].name}
+                            {processedFeaturedStores[0].name}
                           </h3>
                           <button className="bg-white text-black px-6 py-3 sm:px-8 sm:py-4 
                                              rounded-full font-medium text-sm sm:text-base md:text-lg
                                              hover:bg-gray-100 transition-colors duration-200
                                              group-hover:scale-105 transform transition-transform">
-                            {featuredStores[0].subtitle}
+                            {processedFeaturedStores[0].subtitle}
                           </button>
                         </div>
                       </div>
@@ -1117,7 +1198,7 @@ const Tienda = () => {
                   )}
 
                   {/* Cards secundarias de tiendas */}
-                  {featuredStores.slice(1).map((store, index) => (
+                  {processedFeaturedStores.slice(1).map((store, index) => (
                     <motion.div
                       key={store.id}
                       className="flex-shrink-0
@@ -1168,7 +1249,7 @@ const Tienda = () => {
 
           {/* Sección de Sugerencias Para Ti - DINÁMICO */}
           <section className="w-screen -ml-1 sm:w-full sm:ml-0">
-            {personalizedSuggestions.length > 0 ? (
+            {processedPersonalizedSuggestions.length > 0 ? (
               <div className="w-full max-w-full px-3 sm:px-0">
                 {/* Título de la sección */}
                 <div className="flex items-center justify-between mb-6 sm:mb-8">
@@ -1191,7 +1272,7 @@ const Tienda = () => {
                 {/* Scroll horizontal de productos */}
                 <div className="w-full overflow-x-auto scrollbar-hide">
                   <div className="flex gap-4 sm:gap-5 md:gap-6 pb-4 min-w-max">
-                    {personalizedSuggestions.map((producto, index) => (
+                    {processedPersonalizedSuggestions.map((producto, index) => (
                     <motion.div
                       key={producto.id}
                       className="flex-shrink-0 cursor-pointer group"

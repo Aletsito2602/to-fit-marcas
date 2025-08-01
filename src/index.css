@@ -48,6 +48,33 @@ body {
 .menu-item {
   background-color: var(--bg-secondary);
   border-radius: var(--border-radius);
+}
+
+/* Mejoras para el scroll del menu */
+.menu-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
+}
+
+.menu-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menu-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.menu-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(75, 85, 99, 0.8);
+}
+
+.menu-item {
   height: var(--menu-item-height);
   margin-bottom: var(--spacing-sm);
   padding: 0 var(--spacing-md);
