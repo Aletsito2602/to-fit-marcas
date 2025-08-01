@@ -14,7 +14,11 @@ import Header from '../../components/Header';
 import BackgroundPattern from '../../components/BackgroundPattern';
 import BottomTabBar from '../../components/BottomTabBar';
 
-const SettingsScreen: React.FC = () => {
+interface SettingsScreenProps {
+  navigation: any;
+}
+
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const { logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [emailMarketing, setEmailMarketing] = useState(false);
@@ -32,19 +36,19 @@ const SettingsScreen: React.FC = () => {
         {
           icon: 'person-outline',
           label: 'Información personal',
-          action: () => {},
+          action: () => navigation.navigate('PersonalInfo'),
           hasArrow: true,
         },
         {
           icon: 'lock-closed-outline',
           label: 'Cambiar contraseña',
-          action: () => {},
+          action: () => navigation.navigate('ChangePassword'),
           hasArrow: true,
         },
         {
           icon: 'card-outline',
           label: 'Métodos de pago',
-          action: () => {},
+          action: () => navigation.navigate('PaymentMethods'),
           hasArrow: true,
         },
       ],
@@ -72,19 +76,19 @@ const SettingsScreen: React.FC = () => {
         {
           icon: 'storefront-outline',
           label: 'Configuración de tienda',
-          action: () => {},
+          action: () => navigation.navigate('StoreConfig'),
           hasArrow: true,
         },
         {
           icon: 'car-outline',
           label: 'Métodos de envío',
-          action: () => {},
+          action: () => navigation.navigate('ShippingMethods'),
           hasArrow: true,
         },
         {
           icon: 'receipt-outline',
           label: 'Configuración fiscal',
-          action: () => {},
+          action: () => navigation.navigate('TaxConfig'),
           hasArrow: true,
         },
       ],
@@ -119,25 +123,25 @@ const SettingsScreen: React.FC = () => {
         {
           icon: 'help-circle-outline',
           label: 'Centro de ayuda',
-          action: () => {},
+          action: () => navigation.navigate('HelpCenter'),
           hasArrow: true,
         },
         {
           icon: 'chatbubble-outline',
           label: 'Contactar soporte',
-          action: () => {},
+          action: () => navigation.navigate('ContactSupport'),
           hasArrow: true,
         },
         {
           icon: 'document-text-outline',
           label: 'Términos y condiciones',
-          action: () => {},
+          action: () => navigation.navigate('Terms'),
           hasArrow: true,
         },
         {
           icon: 'shield-outline',
           label: 'Política de privacidad',
-          action: () => {},
+          action: () => navigation.navigate('PrivacyPolicy'),
           hasArrow: true,
         },
       ],
@@ -203,13 +207,13 @@ const SettingsScreen: React.FC = () => {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+          <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
           <Text style={styles.logoutText}>Cerrar sesión</Text>
         </TouchableOpacity>
 
         {/* Delete Account */}
         <TouchableOpacity style={styles.deleteButton}>
-          <Ionicons name="trash-outline" size={20} color="#EF4444" />
+          <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
           <Text style={styles.deleteText}>Eliminar cuenta</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -319,7 +323,7 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 16,
     fontFamily: 'Poppins-Medium',
-    color: '#EF4444',
+    color: '#FFFFFF',
     marginLeft: 8,
   },
   deleteButton: {
@@ -334,7 +338,7 @@ const styles = StyleSheet.create({
   deleteText: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
-    color: '#EF4444',
+    color: '#FFFFFF',
     marginLeft: 8,
   },
 });

@@ -13,6 +13,16 @@ import CollectionsScreen from '../screens/collections/CollectionsScreen';
 import InvoicesScreen from '../screens/invoices/InvoicesScreen';
 import ReportsScreen from '../screens/reports/ReportsScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
+import PersonalInfoScreen from '../screens/settings/PersonalInfoScreen';
+import ChangePasswordScreen from '../screens/settings/ChangePasswordScreen';
+import PaymentMethodsScreen from '../screens/settings/PaymentMethodsScreen';
+import StoreConfigScreen from '../screens/settings/StoreConfigScreen';
+import ShippingMethodsScreen from '../screens/settings/ShippingMethodsScreen';
+import TaxConfigScreen from '../screens/settings/TaxConfigScreen';
+import HelpCenterScreen from '../screens/settings/HelpCenterScreen';
+import ContactSupportScreen from '../screens/settings/ContactSupportScreen';
+import TermsScreen from '../screens/settings/TermsScreen';
+import PrivacyPolicyScreen from '../screens/settings/PrivacyPolicyScreen';
 import SupportScreen from '../screens/support/SupportScreen';
 import InventoryScreen from '../screens/main/InventoryScreen';
 
@@ -30,6 +40,16 @@ export type DrawerParamList = {
   Reports: undefined;
   Support: undefined;
   Settings: undefined;
+  PersonalInfo: undefined;
+  ChangePassword: undefined;
+  PaymentMethods: undefined;
+  StoreConfig: undefined;
+  ShippingMethods: undefined;
+  TaxConfig: undefined;
+  HelpCenter: undefined;
+  ContactSupport: undefined;
+  Terms: undefined;
+  PrivacyPolicy: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -141,6 +161,87 @@ const DrawerNavigator: React.FC = () => {
       <Drawer.Screen 
         name="Inventory" 
         component={InventoryScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      {/* Settings Screens */}
+      <Drawer.Screen 
+        name="PersonalInfo" 
+        component={PersonalInfoScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="ChangePassword" 
+        component={ChangePasswordScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="PaymentMethods" 
+        component={PaymentMethodsScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="StoreConfig" 
+        component={StoreConfigScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="ShippingMethods" 
+        component={ShippingMethodsScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="TaxConfig" 
+        component={TaxConfigScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="HelpCenter" 
+        component={HelpCenterScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="ContactSupport" 
+        component={ContactSupportScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="Terms" 
+        component={TermsScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="PrivacyPolicy" 
+        component={PrivacyPolicyScreen}
         options={{
           drawerItemStyle: { display: 'none' }
         }}
