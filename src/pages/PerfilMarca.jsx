@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { useNavigate } from 'react-router-dom'
-import { Edit3, ChevronDown, Heart, MessageCircle, Share, Camera, Plus, ImageIcon, Eye, Bookmark, Globe, Lock, Archive } from 'lucide-react'
+import { Edit3, ChevronDown, Heart, MessageCircle, Share, Camera, Plus, ImageIcon, Eye, Bookmark, Globe, Lock, Archive, Calendar } from 'lucide-react'
 import PostModal from '../components/ui/PostModal'
 import CreatePostModal from '../components/ui/CreatePostModal'
+import EventSection from '../components/ui/EventSection'
+import CreateEventButton from '../components/ui/CreateEventButton'
+import CreateEventModal from '../components/ui/CreateEventModal'
 import { useAuthStore } from '../store/authStore'
 import { 
   getMockUserProfile, 
@@ -17,6 +20,7 @@ import {
 } from '../services/userProfileService'
 import hybridUserProfileService from '../services/hybridUserProfileService'
 import { likePost, unlikePost, savePost, unsavePost } from '../services/postsService'
+import { getUpcomingEvents, getUserEvents, createEvent } from '../services/eventsService'
 import toast from 'react-hot-toast'
 
 const PerfilMarca = () => {
@@ -43,6 +47,12 @@ const PerfilMarca = () => {
   // ✅ ESTADOS PARA CÁPSULAS
   const [userCapsulas, setUserCapsulas] = useState([])
   const [hoveredCapsula, setHoveredCapsula] = useState(null)
+
+  // ✅ ESTADOS PARA CALENDARIO
+  const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [userEvents, setUserEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(false)
+  const [createEventModalOpen, setCreateEventModalOpen] = useState(false)
 
   const { ref: headerRef, inView: headerInView } = useInView({
     threshold: 0.1,
@@ -395,6 +405,13 @@ const PerfilMarca = () => {
     loadMockData()
   }, [currentUser?.id, currentUser?.uid, currentUser?.email])
 
+  // ✅ CARGA DE EVENTOS CUANDO SE ACTIVA LA PESTAÑA CALENDARIO
+  useEffect(() => {
+    if (activeTab === 'calendario' && currentUser) {
+      loadEvents()
+    }
+  }, [activeTab, currentUser])
+
   // ✅ CÁPSULAS YA INCLUIDAS EN DATOS MOCK
 
   // Funciones de manejo de eventos
@@ -728,6 +745,51 @@ const PerfilMarca = () => {
       return (count / 1000).toFixed(1) + 'K'
     }
     return count.toString()
+  }
+
+  // ✅ FUNCIONES PARA MANEJAR EVENTOS
+  const loadEvents = async () => {
+    if (!currentUser) return
+    
+    try {
+      setEventsLoading(true)
+      const userId = currentUser.id || currentUser.uid || currentUser.email
+      
+      // Cargar eventos próximos y eventos del usuario en paralelo
+      const [upcomingResult, userEventsResult] = await Promise.all([
+        getUpcomingEvents(userId),
+        getUserEvents(userId)
+      ])
+      
+      if (upcomingResult.success) {
+        setUpcomingEvents(upcomingResult.data)
+      }
+      
+      if (userEventsResult.success) {
+        setUserEvents(userEventsResult.data)
+      }
+    } catch (error) {
+      console.error('Error cargando eventos:', error)
+      toast.error('Error al cargar los eventos')
+    } finally {
+      setEventsLoading(false)
+    }
+  }
+
+  const handleEventClick = (event) => {
+    // Aquí se podría abrir un modal para ver el detalle del evento
+    console.log('Evento seleccionado:', event)
+    toast.success(`Viendo evento: ${event.title}`)
+  }
+
+  const handleCreateEvent = () => {
+    setCreateEventModalOpen(true)
+  }
+
+  const handleEventCreated = (newEvent) => {
+    setUserEvents(prev => [newEvent, ...prev])
+    setCreateEventModalOpen(false)
+    toast.success('Evento creado exitosamente')
   }
 
   if (loading || !userProfile) {
@@ -1182,6 +1244,49 @@ const PerfilMarca = () => {
               )}
             </>
           )}
+
+          {/* ✅ CONTENIDO DE CALENDARIO */}
+          {activeTab === 'calendario' && (
+            <>
+              {eventsLoading ? (
+                // Loading state para eventos
+                <div className="text-center py-16">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                  <p className="text-gray-400">Cargando eventos...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Sección: Próximos eventos */}
+                  <EventSection
+                    title="Próximos eventos"
+                    events={upcomingEvents}
+                    isOwner={false}
+                    onEventClick={handleEventClick}
+                    emptyMessage="No hay eventos próximos"
+                    emptyDescription="No hay eventos programados en este momento"
+                  />
+
+                  {/* Botón central: Crear Evento */}
+                  {isOwnProfile && (
+                    <div className="my-8">
+                      <CreateEventButton onClick={handleCreateEvent} />
+                    </div>
+                  )}
+
+                  {/* Sección: Eventos creados por mí */}
+                  <EventSection
+                    title="Eventos creados por mí"
+                    events={userEvents}
+                    isOwner={true}
+                    onEventClick={handleEventClick}
+                    onCreateEvent={handleCreateEvent}
+                    emptyMessage="No has creado eventos aún"
+                    emptyDescription="Crea tu primer evento para comenzar a organizar tus actividades"
+                  />
+                </>
+              )}
+            </>
+          )}
         </motion.div>
 
       </div>
@@ -1202,6 +1307,13 @@ const PerfilMarca = () => {
         isOpen={createPostModalOpen}
         onClose={() => setCreatePostModalOpen(false)}
         onPostCreated={handlePostCreated}
+      />
+
+      {/* ✅ Modal de Crear Evento */}
+      <CreateEventModal
+        isOpen={createEventModalOpen}
+        onClose={() => setCreateEventModalOpen(false)}
+        onEventCreated={handleEventCreated}
       />
     </div>
   )
