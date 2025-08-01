@@ -25,6 +25,7 @@ import TermsScreen from '../screens/settings/TermsScreen';
 import PrivacyPolicyScreen from '../screens/settings/PrivacyPolicyScreen';
 import SupportScreen from '../screens/support/SupportScreen';
 import InventoryScreen from '../screens/main/InventoryScreen';
+import MetricsDashboardScreen from '../screens/metrics/MetricsDashboardScreen';
 
 export type DrawerParamList = {
   MainTabs: undefined;
@@ -50,6 +51,7 @@ export type DrawerParamList = {
   ContactSupport: undefined;
   Terms: undefined;
   PrivacyPolicy: undefined;
+  Metrics: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -242,6 +244,14 @@ const DrawerNavigator: React.FC = () => {
       <Drawer.Screen 
         name="PrivacyPolicy" 
         component={PrivacyPolicyScreen}
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="Metrics" 
+        component={MetricsDashboardScreen}
         options={{
           drawerItemStyle: { display: 'none' }
         }}

@@ -36,7 +36,7 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({ navigation 
       name: 'Visa terminada en 4532',
       details: 'Expira 12/25',
       isDefault: true,
-      icon: 'card',
+      icon: 'card-outline',
     },
     {
       id: '2',
@@ -44,7 +44,7 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({ navigation 
       name: 'Mastercard terminada en 8765',
       details: 'Expira 08/26',
       isDefault: false,
-      icon: 'card',
+      icon: 'card-outline',
     },
     {
       id: '3',
@@ -103,7 +103,7 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({ navigation 
       name: `Tarjeta terminada en ${newCardData.cardNumber.slice(-4)}`,
       details: `Expira ${newCardData.expiryDate}`,
       isDefault: false,
-      icon: 'card',
+      icon: 'card-outline',
     };
 
     setPaymentMethods(prev => [...prev, newCard]);
@@ -130,7 +130,7 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({ navigation 
     <View key={method.id} style={styles.methodCard}>
       <View style={styles.methodHeader}>
         <View style={styles.methodInfo}>
-          <Ionicons name={method.icon as any} size={24} color="#00D4AA" />
+          <Ionicons name={method.icon as any} size={24} color="#FFFFFF" />
           <View style={styles.methodDetails}>
             <Text style={styles.methodName}>{method.name}</Text>
             <Text style={styles.methodSubtitle}>{method.details}</Text>
@@ -192,14 +192,14 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({ navigation 
         </View>
 
         <View style={styles.infoCard}>
-          <Ionicons name="shield-checkmark" size={24} color="#00D4AA" />
+          <Ionicons name="shield-checkmark" size={24} color="#FFFFFF" />
           <Text style={styles.infoText}>
             Tus datos de pago están protegidos con encriptación de nivel bancario.
           </Text>
         </View>
 
         <TouchableOpacity style={styles.addMethodButton} onPress={() => setShowAddModal(true)}>
-          <Ionicons name="add-circle-outline" size={24} color="#00D4AA" />
+          <Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />
           <Text style={styles.addMethodText}>Agregar nuevo método de pago</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   methodCard: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   defaultBadge: {
-    backgroundColor: '#00D4AA',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   defaultText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   methodActions: {
     flexDirection: 'row',
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 14,
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   deleteButton: {
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     borderWidth: 2,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   addMethodText: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 10,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   modalSaveText: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -478,12 +478,12 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: '#00D4AA',
+    color: '#FFFFFF',
     marginBottom: 8,
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 10,

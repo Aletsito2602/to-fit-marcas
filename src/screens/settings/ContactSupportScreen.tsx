@@ -46,7 +46,7 @@ const ContactSupportScreen: React.FC<ContactSupportScreenProps> = ({ navigation 
   ];
 
   const priorities = [
-    { id: 'low', name: 'Baja', color: '#00D4AA' },
+    { id: 'low', name: 'Baja', color: '#FFFFFF' },
     { id: 'medium', name: 'Media', color: '#FFFFFF' },
     { id: 'high', name: 'Alta', color: '#FFFFFF' },
   ];
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   supportCard: {
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 25,
     borderRadius: 15,
     marginTop: 20,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   contactMethod: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     borderColor: '#333',
   },
   issueTypeSelected: {
-    backgroundColor: '#00D4AA',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderColor: '#00D4AA',
   },
   issueTypeText: {
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   issueTypeTextSelected: {
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   priorityContainer: {
     flexDirection: 'row',
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 12,
     borderRadius: 8,
     marginHorizontal: 5,
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 10,
@@ -530,12 +530,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#00D4AA',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
     padding: 15,
     borderRadius: 10,
   },
   submitButtonText: {
-    color: '#1a1a1a',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -546,7 +548,7 @@ const styles = StyleSheet.create({
   faqButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     borderWidth: 1,
@@ -570,7 +572,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginBottom: 30,

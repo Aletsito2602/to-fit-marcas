@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '../../components/Header';
@@ -18,6 +19,8 @@ const { width } = Dimensions.get('window');
 
 const ReportsScreen: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Este mes');
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
 
   const periods = ['Esta semana', 'Este mes', 'Últimos 3 meses', 'Este año'];
 
@@ -233,10 +236,22 @@ const ReportsScreen: React.FC = () => {
               </View>
               
               <View style={styles.reportActions}>
-                <TouchableOpacity style={styles.viewButton}>
+                <TouchableOpacity 
+                  style={styles.viewButton}
+                  onPress={() => {
+                    setSelectedReport(report);
+                    setShowBottomSheet(true);
+                  }}
+                >
                   <Text style={styles.viewButtonText}>Ver</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.downloadButton}>
+                <TouchableOpacity 
+                  style={styles.downloadButton}
+                  onPress={() => {
+                    setSelectedReport(report);
+                    setShowBottomSheet(true);
+                  }}
+                >
                   <Ionicons name="download-outline" size={16} color="#A0A0A0" />
                 </TouchableOpacity>
               </View>
@@ -267,6 +282,89 @@ const ReportsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {/* Bottom Sheet Modal */}
+      <Modal
+        visible={showBottomSheet}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowBottomSheet(false)}
+      >
+        <View style={styles.bottomSheetOverlay}>
+          <TouchableOpacity 
+            style={styles.bottomSheetBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowBottomSheet(false)}
+          />
+          <View style={styles.bottomSheetContainer}>
+            <View style={styles.bottomSheetHandle} />
+            
+            {selectedReport && (
+              <>
+                <View style={styles.bottomSheetHeader}>
+                  <View style={[styles.reportIconSmall, { backgroundColor: selectedReport.color }]}>
+                    <Ionicons name={selectedReport.icon as any} size={20} color="#FFFFFF" />
+                  </View>
+                  <View style={styles.bottomSheetHeaderInfo}>
+                    <Text style={styles.bottomSheetTitle}>{selectedReport.title}</Text>
+                    <Text style={styles.bottomSheetSubtitle}>{selectedReport.description}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.bottomSheetActions}>
+                  <TouchableOpacity 
+                    style={styles.bottomSheetAction}
+                    onPress={() => {
+                      setShowBottomSheet(false);
+                      Alert.alert('Ver Reporte', `Abriendo ${selectedReport.title} en pantalla`);
+                    }}
+                  >
+                    <Ionicons name="eye-outline" size={24} color="#FFFFFF" />
+                    <Text style={styles.bottomSheetActionText}>Ver en pantalla</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#A0A0A0" />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.bottomSheetAction}
+                    onPress={() => {
+                      setShowBottomSheet(false);
+                      Alert.alert('Descargar PDF', `Descargando ${selectedReport.title}.pdf`);
+                    }}
+                  >
+                    <Ionicons name="document-text-outline" size={24} color="#FFFFFF" />
+                    <Text style={styles.bottomSheetActionText}>Descargar PDF</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#A0A0A0" />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.bottomSheetAction}
+                    onPress={() => {
+                      setShowBottomSheet(false);
+                      Alert.alert('Exportar Excel', `Exportando ${selectedReport.title} a Excel`);
+                    }}
+                  >
+                    <Ionicons name="document-outline" size={24} color="#FFFFFF" />
+                    <Text style={styles.bottomSheetActionText}>Exportar a Excel</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#A0A0A0" />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.bottomSheetAction}
+                    onPress={() => {
+                      setShowBottomSheet(false);
+                      Alert.alert('Compartir', `Compartiendo ${selectedReport.title}`);
+                    }}
+                  >
+                    <Ionicons name="share-outline" size={24} color="#FFFFFF" />
+                    <Text style={styles.bottomSheetActionText}>Compartir</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#A0A0A0" />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
       
       <BottomTabBar />
     </SafeAreaView>
@@ -478,6 +576,78 @@ const styles = StyleSheet.create({
     borderColor: '#333333',
   },
   exportText: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Poppins-Medium',
+    color: '#FFFFFF',
+    marginLeft: 15,
+  },
+  // Bottom Sheet styles
+  bottomSheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheetBackdrop: {
+    flex: 1,
+  },
+  bottomSheetContainer: {
+    backgroundColor: 'rgba(41, 41, 41, 1)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 34,
+  },
+  bottomSheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#333333',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  bottomSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  reportIconSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
+  },
+  bottomSheetHeaderInfo: {
+    flex: 1,
+  },
+  bottomSheetTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  bottomSheetSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#A0A0A0',
+  },
+  bottomSheetActions: {
+    paddingTop: 20,
+  },
+  bottomSheetAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  bottomSheetActionText: {
     flex: 1,
     fontSize: 16,
     fontFamily: 'Poppins-Medium',

@@ -362,6 +362,8 @@ const ProfileScreen: React.FC = () => {
   const [selectedCapsulaImage, setSelectedCapsulaImage] = useState<string | null>(null);
   const [capsulaImageModalOpen, setCapsulaImageModalOpen] = useState(false);
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [commentText, setCommentText] = useState('');
   const [eventForm, setEventForm] = useState({
     titulo: '',
     descripcion: '',
@@ -509,7 +511,22 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleCapsulaCommentPress = () => {
-    console.log('Abrir comentarios capsula');
+    setCommentModalOpen(true);
+  };
+
+  const closeCommentModal = () => {
+    setCommentModalOpen(false);
+    setCommentText('');
+  };
+
+  const handleSendComment = () => {
+    if (commentText.trim()) {
+      Alert.alert('Comentario enviado', `Comentario: "${commentText.trim()}" enviado exitosamente`);
+      setCommentText('');
+      setCommentModalOpen(false);
+    } else {
+      Alert.alert('Error', 'Escribe un comentario antes de enviar');
+    }
   };
 
   const handleCapsulaMorePress = () => {
@@ -641,6 +658,12 @@ const ProfileScreen: React.FC = () => {
 
   const renderCapsula = ({ item, index }: { item: Capsula; index: number }) => {
     const isEven = index % 2 === 0;
+    // Obtener las primeras 4 imágenes, rellenar con la primera si hay menos
+    const imagenesGrid = [];
+    for (let i = 0; i < 4; i++) {
+      imagenesGrid.push(item.imagenes[i] || item.imagenes[0]);
+    }
+    
     return (
       <TouchableOpacity
         style={[
@@ -649,7 +672,18 @@ const ProfileScreen: React.FC = () => {
         ]}
         onPress={() => handleCapsulaPress(item)}
       >
-        <Image source={{ uri: item.imagenes[0] }} style={styles.capsulaImage} />
+        {/* Grid 2x2 de imágenes */}
+        <View style={styles.capsulaImageGrid}>
+          <View style={styles.capsulaImageRow}>
+            <Image source={{ uri: imagenesGrid[0] }} style={[styles.capsulaGridImage, { marginRight: 0.5 }]} />
+            <Image source={{ uri: imagenesGrid[1] }} style={[styles.capsulaGridImage, { marginLeft: 0.5, marginRight: 0 }]} />
+          </View>
+          <View style={[styles.capsulaImageRow, { marginBottom: 0 }]}>
+            <Image source={{ uri: imagenesGrid[2] }} style={[styles.capsulaGridImage, { marginRight: 0.5, marginBottom: 0 }]} />
+            <Image source={{ uri: imagenesGrid[3] }} style={[styles.capsulaGridImage, { marginLeft: 0.5, marginRight: 0, marginBottom: 0 }]} />
+          </View>
+        </View>
+        
         <View style={styles.capsulaOverlay}>
           <View style={styles.capsulaHeader}>
             <Image source={{ uri: item.logoMarca }} style={styles.capsulaLogo} />
@@ -1041,6 +1075,87 @@ const ProfileScreen: React.FC = () => {
             </PanGestureHandler>
           )}
         </View>
+      </Modal>
+
+      {/* Comment Modal */}
+      <Modal
+        visible={commentModalOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeCommentModal}
+      >
+        <KeyboardAvoidingView 
+          style={styles.commentModalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={styles.commentModalOverlay}>
+            <View style={styles.commentModalContent}>
+              {/* Header */}
+              <View style={styles.commentModalHeader}>
+                <TouchableOpacity onPress={closeCommentModal}>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.commentModalTitle}>Agregar comentario</Text>
+                <TouchableOpacity 
+                  onPress={handleSendComment}
+                  style={styles.sendCommentButton}
+                >
+                  <Text style={styles.sendCommentText}>Enviar</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Input area */}
+              <View style={styles.commentInputContainer}>
+                <View style={styles.commentUserInfo}>
+                  <Image 
+                    source={{ 
+                      uri: user?.photo_url || 'https://images.unsplash.com/photo-1494790108755-2616c0763a92?w=40&h=40&fit=crop&crop=face'
+                    }} 
+                    style={styles.commentUserAvatar}
+                  />
+                  <Text style={styles.commentUserName}>
+                    {user?.display_name || user?.nombre_completo || 'Usuario'}
+                  </Text>
+                </View>
+                
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="Escribe tu comentario..."
+                  placeholderTextColor="#666666"
+                  value={commentText}
+                  onChangeText={(text) => {
+                    if (text.length <= 500) {
+                      setCommentText(text);
+                    }
+                  }}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  autoFocus
+                  maxLength={500}
+                />
+                
+                <Text style={styles.commentCharCount}>{commentText.length}/500</Text>
+              </View>
+
+              {/* Quick reactions */}
+              <View style={styles.quickReactionsContainer}>
+                <Text style={styles.quickReactionsTitle}>Reacciones rápidas</Text>
+                <View style={styles.quickReactions}>
+                  {['😍', '🔥', '👏', '❤️', '💯', '🙌'].map((emoji, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.quickReactionButton}
+                      onPress={() => setCommentText(prev => prev + emoji)}
+                    >
+                      <Text style={styles.quickReactionEmoji}>{emoji}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Create Event Modal */}
@@ -1484,9 +1599,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C1C1C',
     marginBottom: 8,
   },
-  capsulaImage: {
+  capsulaImageGrid: {
     width: '100%',
     height: '70%',
+    flexDirection: 'column',
+  },
+  capsulaImageRow: {
+    flex: 1,
+    flexDirection: 'row',
+    marginBottom: 1,
+  },
+  capsulaGridImage: {
+    flex: 1,
+    height: '100%',
+    resizeMode: 'cover',
   },
   capsulaOverlay: {
     position: 'absolute',
@@ -2087,6 +2213,120 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 8,
+  },
+  
+  // Comment Modal Styles
+  commentModalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  commentModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  commentModalContent: {
+    backgroundColor: '#1C1C1C',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  commentModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  commentModalTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 20,
+  },
+  sendCommentButton: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  sendCommentText: {
+    color: '#000000',
+    fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  commentInputContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  commentUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  commentUserAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  commentUserName: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#FFFFFF',
+  },
+  commentInput: {
+    backgroundColor: '#333333',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#444444',
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: 8,
+  },
+  commentCharCount: {
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
+    color: '#666666',
+    textAlign: 'right',
+    marginBottom: 20,
+  },
+  quickReactionsContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  quickReactionsTitle: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  quickReactions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  quickReactionButton: {
+    backgroundColor: '#333333',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  quickReactionEmoji: {
+    fontSize: 20,
   },
 });
 

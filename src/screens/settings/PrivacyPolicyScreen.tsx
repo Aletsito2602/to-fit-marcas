@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   introSection: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 20,
     borderRadius: 10,
     marginBottom: 25,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   securityCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 10,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   },
   rightItem: {
     width: '48%',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   cookieTypes: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 10,
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   contactInfo: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 10,
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   footer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 25,
     borderRadius: 10,
     marginTop: 20,

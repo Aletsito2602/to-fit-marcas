@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   },
   welcomeCard: {
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 25,
     borderRadius: 15,
     marginTop: 20,
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderRadius: 10,
     paddingHorizontal: 15,
     marginBottom: 20,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   categoryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
@@ -439,17 +439,17 @@ const styles = StyleSheet.create({
     borderColor: '#00D4AA',
   },
   categoryButtonActive: {
-    backgroundColor: '#00D4AA',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   categoryText: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 8,
     marginRight: 8,
   },
   categoryTextActive: {
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   categoryBadge: {
     backgroundColor: '#333',
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   faqItem: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   supportOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,

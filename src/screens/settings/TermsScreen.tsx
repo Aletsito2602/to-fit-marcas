@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   contactInfo: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 10,
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   footer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 20,
     borderRadius: 10,
     marginTop: 20,

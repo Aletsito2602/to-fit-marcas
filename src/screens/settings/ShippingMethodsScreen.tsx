@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   methodCard: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   methodPrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#00D4AA',
+    color: '#FFFFFF',
     marginRight: 15,
   },
   methodTime: {
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 14,
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontWeight: '500',
     marginLeft: 4,
   },
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     borderWidth: 2,
@@ -531,13 +531,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   addMethodText: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 10,
   },
   statsCard: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 20,
     borderRadius: 10,
     marginBottom: 30,
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00D4AA',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   statLabel: {
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   modalSaveText: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -609,12 +609,12 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: '#00D4AA',
+    color: '#FFFFFF',
     marginBottom: 8,
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderWidth: 1,
     borderColor: '#333',
     borderRadius: 10,
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
   helpCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 10,

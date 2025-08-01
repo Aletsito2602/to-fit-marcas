@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '../../components/Header';
@@ -14,6 +16,8 @@ import BottomTabBar from '../../components/BottomTabBar';
 
 const InvoicesScreen: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('Todas');
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const filters = ['Todas', 'Pendientes', 'Pagadas', 'Vencidas'];
   
@@ -109,7 +113,10 @@ const InvoicesScreen: React.FC = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Facturas</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => Alert.alert('Nueva Factura', 'Abriendo formulario para crear nueva factura...')}
+          >
             <Ionicons name="add" size={20} color="#FFFFFF" />
             <Text style={styles.addButtonText}>Nueva</Text>
           </TouchableOpacity>
@@ -163,7 +170,14 @@ const InvoicesScreen: React.FC = () => {
               const statusInfo = getStatusInfo(invoice.status);
               
               return (
-              <TouchableOpacity key={invoice.id} style={styles.invoiceCard}>
+              <TouchableOpacity 
+                key={invoice.id} 
+                style={styles.invoiceCard}
+                onPress={() => {
+                  setSelectedInvoice(invoice);
+                  setShowInvoiceModal(true);
+                }}
+              >
                 <View style={styles.invoiceHeader}>
                   <View style={styles.invoiceInfo}>
                     <Text style={styles.invoiceId}>{invoice.id}</Text>
@@ -214,6 +228,120 @@ const InvoicesScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {/* Invoice Detail Modal */}
+      <Modal
+        visible={showInvoiceModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowInvoiceModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowInvoiceModal(false)}
+            >
+              <Ionicons name="close" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Detalle de Factura</Text>
+            <View style={styles.modalCloseButton} />
+          </View>
+          
+          {selectedInvoice && (
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              <View style={styles.invoiceDetailHeader}>
+                <Text style={styles.invoiceDetailId}>{selectedInvoice.id}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusInfo(selectedInvoice.status).bg }]}>
+                  <Text style={[styles.statusText, { color: getStatusInfo(selectedInvoice.status).color }]}>
+                    {getStatusInfo(selectedInvoice.status).text}
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.invoiceDetailSection}>
+                <Text style={styles.sectionTitle}>Información del Cliente</Text>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Cliente:</Text>
+                  <Text style={styles.detailValue}>{selectedInvoice.customer}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.invoiceDetailSection}>
+                <Text style={styles.sectionTitle}>Detalles de Facturación</Text>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Fecha de emisión:</Text>
+                  <Text style={styles.detailValue}>{selectedInvoice.date}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Fecha de vencimiento:</Text>
+                  <Text style={styles.detailValue}>{selectedInvoice.dueDate}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Monto total:</Text>
+                  <Text style={styles.detailValueAmount}>${selectedInvoice.amount.toLocaleString('es-AR')}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.invoiceDetailSection}>
+                <Text style={styles.sectionTitle}>Productos/Servicios</Text>
+                <View style={styles.productItem}>
+                  <Text style={styles.productName}>Consultoría de Marketing Digital</Text>
+                  <Text style={styles.productDetails}>Cantidad: 1 | Precio: ${selectedInvoice.amount.toLocaleString('es-AR')}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.modalActions}>
+                <TouchableOpacity 
+                  style={styles.modalActionButton}
+                  onPress={() => {
+                    setShowInvoiceModal(false);
+                    Alert.alert('Descargar PDF', `Descargando factura ${selectedInvoice.id}.pdf`);
+                  }}
+                >
+                  <Ionicons name="download-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.modalActionText}>Descargar PDF</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.modalActionButton}
+                  onPress={() => {
+                    setShowInvoiceModal(false);
+                    Alert.alert('Compartir', `Compartiendo factura ${selectedInvoice.id}`);
+                  }}
+                >
+                  <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.modalActionText}>Compartir</Text>
+                </TouchableOpacity>
+                
+                {selectedInvoice.status === 'pending' && (
+                  <TouchableOpacity 
+                    style={[styles.modalActionButton, styles.primaryButton]}
+                    onPress={() => {
+                      setShowInvoiceModal(false);
+                      Alert.alert('Factura Pagada', `Factura ${selectedInvoice.id} marcada como pagada`);
+                    }}
+                  >
+                    <Ionicons name="card-outline" size={20} color="#FFFFFF" />
+                    <Text style={[styles.modalActionText, styles.primaryButtonText]}>Marcar como Pagada</Text>
+                  </TouchableOpacity>
+                )}
+                
+                <TouchableOpacity 
+                  style={styles.modalActionButton}
+                  onPress={() => {
+                    setShowInvoiceModal(false);
+                    Alert.alert('Enviar por Email', `Enviando factura ${selectedInvoice.id} por email`);
+                  }}
+                >
+                  <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.modalActionText}>Enviar por Email</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          )}
+        </SafeAreaView>
+      </Modal>
       
       <BottomTabBar />
     </SafeAreaView>
@@ -421,6 +549,120 @@ const styles = StyleSheet.create({
     color: '#A0A0A0',
     marginTop: 12,
     textAlign: 'center',
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(41, 41, 41, 1)',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  modalCloseButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#FFFFFF',
+  },
+  modalContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  invoiceDetailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+    marginBottom: 20,
+  },
+  invoiceDetailId: {
+    fontSize: 24,
+    fontFamily: 'Poppins-Bold',
+    color: '#FFFFFF',
+  },
+  invoiceDetailSection: {
+    marginBottom: 25,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#A0A0A0',
+  },
+  detailValue: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#FFFFFF',
+  },
+  detailValueAmount: {
+    fontSize: 18,
+    fontFamily: 'Poppins-Bold',
+    color: '#4ADE80',
+  },
+  productItem: {
+    backgroundColor: '#1C1C1C',
+    borderRadius: 12,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  productName: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Medium',
+    color: '#FFFFFF',
+    marginBottom: 5,
+  },
+  productDetails: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#A0A0A0',
+  },
+  modalActions: {
+    paddingVertical: 20,
+    gap: 12,
+  },
+  modalActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1C1C1C',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  modalActionText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Medium',
+    color: '#FFFFFF',
+    marginLeft: 10,
+  },
+  primaryButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#FFFFFF',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
   },
 });
 

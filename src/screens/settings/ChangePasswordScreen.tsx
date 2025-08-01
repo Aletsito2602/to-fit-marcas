@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
@@ -277,14 +277,14 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: '#00D4AA',
+    color: '#FFFFFF',
     marginBottom: 8,
     fontWeight: '500',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#333',
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   requirementsCard: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
@@ -321,10 +321,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   requirementMet: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
   },
   changeButton: {
-    backgroundColor: '#00D4AA',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -334,7 +336,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   changeButtonText: {
-    color: '#1a1a1a',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -343,7 +345,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   forgotPasswordText: {
-    color: '#00D4AA',
+    color: '#FFFFFF',
     fontSize: 14,
     textDecorationLine: 'underline',
   },
